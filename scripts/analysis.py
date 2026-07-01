@@ -7,7 +7,7 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-# ── 1. Paths (work regardless of which directory you run from) ─────────────
+# ── 1. Paths ───────────────────────────────────────────────────────────────
 script_dir = os.path.dirname(os.path.abspath(__file__))
 data_path  = os.path.join(script_dir, '..', 'Data', 'Cleaned', 'cleaned_data.csv')
 output_dir = os.path.join(script_dir, '..', 'docs', 'graphs')
@@ -33,7 +33,7 @@ GROUP_COLORS = {
     "No HIV - No Pain":  "#2ecc71"
 }
 
-print(f"Loaded {len(df)} patients · groups: {df['Group'].value_counts().to_dict()}")
+print(f"Loaded {len(df)} patients")
 
 # ── 3. Helpers ─────────────────────────────────────────────────────────────
 def save_fig(fig, filename):
@@ -41,24 +41,32 @@ def save_fig(fig, filename):
     fig.write_html(path, include_plotlyjs='cdn')
     print(f"  Saved: {filename}")
 
-def mobile_layout(fig, height=500):
+def base_layout(fig, height=550):
+    """Clean layout — full size, legend below chart, readable fonts."""
     fig.update_layout(
         autosize=True,
         height=height,
-        margin=dict(l=10, r=10, t=60, b=130),
+        margin=dict(l=50, r=30, t=70, b=160),
         legend=dict(
             orientation="h",
             yanchor="bottom",
             y=-0.38,
             xanchor="center",
             x=0.5,
-            font=dict(size=10),
-            itemwidth=90
+            font=dict(size=12),
+            itemwidth=110
         ),
-        font=dict(size=11),
-        title_font=dict(size=13),
-        xaxis=dict(tickfont=dict(size=9), title_font=dict(size=10), tickangle=-30),
-        yaxis=dict(tickfont=dict(size=9), title_font=dict(size=10))
+        font=dict(size=12),
+        title_font=dict(size=15),
+        xaxis=dict(
+            tickfont=dict(size=11),
+            title_font=dict(size=12),
+            tickangle=-25
+        ),
+        yaxis=dict(
+            tickfont=dict(size=11),
+            title_font=dict(size=12)
+        )
     )
     return fig
 
@@ -88,12 +96,12 @@ fig1 = px.bar(
     pd.DataFrame(rows), x="Condition", y="Correlation (r)",
     color="Group", barmode="group",
     color_discrete_map=GROUP_COLORS,
-    title="Pain Severity vs Mental Health Conditions",
+    title="Correlation 1: Pain Severity vs Mental Health Conditions",
     labels={"Correlation (r)": "Point-Biserial r"},
     hover_data=["P-Value", "Significant"]
 )
 fig1.add_hline(y=0, line_dash="dash", line_color="black")
-fig1 = mobile_layout(fig1, height=500)
+fig1 = base_layout(fig1, height=580)
 save_fig(fig1, "01_pain_vs_mental_health.html")
 
 # ── 5. CORRELATION 2: Chronic Pain Duration vs Mental Health ──────────────
@@ -121,24 +129,24 @@ fig2 = px.bar(
     color="Group", barmode="group",
     facet_row="Pain Duration",
     color_discrete_map=GROUP_COLORS,
-    title="Chronic Pain Duration vs Mental Health Conditions",
+    title="Correlation 2: Chronic Pain Duration vs Mental Health",
     hover_data=["P-Value", "Significant"],
-    height=750
+    height=800
 )
 fig2.add_hline(y=0, line_dash="dash", line_color="black")
 fig2.update_layout(
     autosize=True,
-    height=750,
-    margin=dict(l=10, r=10, t=60, b=150),
+    height=800,
+    margin=dict(l=50, r=30, t=70, b=180),
     legend=dict(
-        orientation="h", yanchor="bottom", y=-0.22,
-        xanchor="center", x=0.5, font=dict(size=10)
+        orientation="h", yanchor="bottom", y=-0.25,
+        xanchor="center", x=0.5, font=dict(size=12), itemwidth=110
     ),
-    font=dict(size=11),
-    title_font=dict(size=13)
+    font=dict(size=12),
+    title_font=dict(size=15)
 )
-fig2.for_each_xaxis(lambda ax: ax.update(tickangle=-30, tickfont=dict(size=9)))
-fig2.for_each_yaxis(lambda ax: ax.update(tickfont=dict(size=9)))
+fig2.for_each_xaxis(lambda ax: ax.update(tickangle=-25, tickfont=dict(size=11)))
+fig2.for_each_yaxis(lambda ax: ax.update(tickfont=dict(size=11)))
 save_fig(fig2, "02_chronic_pain_vs_mental_health.html")
 
 # ── 6. CORRELATION 3: ART Adherence vs Pain ───────────────────────────────
@@ -148,25 +156,25 @@ hiv_df = df[df["Group"].isin(["HIV - Pain", "HIV - No Pain"])].dropna(
 
 r, p = stats.spearmanr(hiv_df["Doses ART missed?"],
                         hiv_df["Bodily Pain Rating in Past Week"])
-rows.append({"Comparison": "ART Missed\nvs Pain Rating",
+rows.append({"Comparison": "ART Missed vs Pain Rating",
              "r": round(r, 3), "p": round(p, 4)})
 
 for col in ["Pain > 3 Months", "Pain >12hrs or More 6 months"]:
     g = hiv_df.dropna(subset=[col])
     r, p = stats.pointbiserialr(g[col], g["Doses ART missed?"])
-    label = "ART Missed\nvs Pain >3mo" if "3 Months" in col \
-        else "ART Missed\nvs Pain >12hrs"
+    label = "ART Missed vs Pain > 3 Months" if "3 Months" in col \
+        else "ART Missed vs Pain > 12hrs/day"
     rows.append({"Comparison": label, "r": round(r, 3), "p": round(p, 4)})
 
 fig3 = px.bar(
     pd.DataFrame(rows), x="Comparison", y="r",
-    title="ART Adherence vs Pain (HIV Patients Only)",
+    title="Correlation 3: ART Adherence vs Pain (HIV Patients Only)",
     labels={"r": "Spearman / Point-Biserial r"},
     color="Comparison", text="p"
 )
 fig3.update_traces(texttemplate="p=%{text}", textposition="outside")
 fig3.add_hline(y=0, line_dash="dash", line_color="black")
-fig3 = mobile_layout(fig3, height=480)
+fig3 = base_layout(fig3, height=560)
 save_fig(fig3, "03_art_adherence_vs_pain.html")
 
 # ── 7. CORRELATION 4: ART Drug Class vs Peripheral Neuropathy ─────────────
@@ -197,10 +205,10 @@ fig4 = px.bar(
     pd.DataFrame(rows), x="ART Class", y="Chi2",
     color="Significant",
     color_discrete_map={"Yes": "#e74c3c", "No": "#95a5a6"},
-    title="ART Drug Class vs Peripheral Neuropathy (Chi-Square)",
+    title="Correlation 4: ART Drug Class vs Peripheral Neuropathy",
     hover_data=["P-Value"]
 )
-fig4 = mobile_layout(fig4, height=450)
+fig4 = base_layout(fig4, height=540)
 save_fig(fig4, "04_art_class_vs_neuropathy.html")
 
 # ── 8. CORRELATION 5: Metabolic Comorbidity Clustering ────────────────────
@@ -224,7 +232,7 @@ for col_a, col_b in metabolic_pairs:
                 pd.crosstab(g[col_a], g[col_b]))
             r = chi2
         rows.append({
-            "Pair": f"{col_a}\nvs {col_b}",
+            "Pair": f"{col_a} vs {col_b}",
             "Group": group,
             "Statistic": round(r, 3),
             "P-Value": round(p, 4),
@@ -235,10 +243,10 @@ fig5 = px.bar(
     pd.DataFrame(rows), x="Pair", y="Statistic",
     color="Group", barmode="group",
     color_discrete_map=GROUP_COLORS,
-    title="Metabolic Comorbidity Clustering by Group",
+    title="Correlation 5: Metabolic Comorbidity Clustering by Group",
     hover_data=["P-Value", "Significant"]
 )
-fig5 = mobile_layout(fig5, height=500)
+fig5 = base_layout(fig5, height=580)
 save_fig(fig5, "05_metabolic_clustering.html")
 
 # ── 9. CORRELATION 6: Age vs Comorbidity Burden ───────────────────────────
@@ -252,28 +260,20 @@ fig6 = px.scatter(
     df, x="Age", y="Comorbidity_Count",
     color="Group", trendline="ols",
     color_discrete_map=GROUP_COLORS,
-    title="Age vs Total Comorbidity Count by Group",
-    labels={"Comorbidity_Count": "No. of Current Conditions"}
+    title="Correlation 6: Age vs Total Comorbidity Count by Group",
+    labels={"Comorbidity_Count": "Number of Current Conditions"}
 )
-fig6 = mobile_layout(fig6, height=500)
+fig6 = base_layout(fig6, height=580)
 save_fig(fig6, "06_age_vs_comorbidity.html")
-
-rows = []
-for group in df["Group"].unique():
-    g = df[df["Group"] == group].dropna(subset=["Age", "Comorbidity_Count"])
-    r, p = stats.spearmanr(g["Age"], g["Comorbidity_Count"])
-    rows.append({"Group": group, "Spearman r": round(r, 3), "P-Value": round(p, 4)})
-print("\nCorrelation 6 - Age vs Comorbidity:")
-print(pd.DataFrame(rows).to_string(index=False))
 
 # ── 10. CORRELATION 7: Age vs Pain Severity ───────────────────────────────
 fig7 = px.scatter(
     df, x="Age", y="Bodily Pain Rating in Past Week",
     color="Group", trendline="ols",
     color_discrete_map=GROUP_COLORS,
-    title="Age vs Pain Severity by Group"
+    title="Correlation 7: Age vs Pain Severity by Group"
 )
-fig7 = mobile_layout(fig7, height=500)
+fig7 = base_layout(fig7, height=580)
 save_fig(fig7, "07_age_vs_pain.html")
 
 # ── 11. CORRELATION 8: Smoking vs Pain ───────────────────────────────────
@@ -297,11 +297,11 @@ for group in df["Group"].unique():
 fig8 = px.bar(
     pd.DataFrame(rows), x="Group", y="r",
     color="Smoke Type", barmode="group",
-    title="Smoking vs Pain Severity by Group",
+    title="Correlation 8: Smoking vs Pain Severity by Group",
     hover_data=["P-Value"]
 )
 fig8.add_hline(y=0, line_dash="dash", line_color="black")
-fig8 = mobile_layout(fig8, height=500)
+fig8 = base_layout(fig8, height=580)
 save_fig(fig8, "08_smoking_vs_pain.html")
 
 # ── 12. CORRELATION 9: Sleep vs Pain & Mental Health ─────────────────────
@@ -328,11 +328,11 @@ fig9 = px.bar(
     pd.DataFrame(rows), x="Target", y="r",
     color="Group", barmode="group",
     color_discrete_map=GROUP_COLORS,
-    title="Sleep Condition vs Pain & Mental Health",
+    title="Correlation 9: Sleep Condition vs Pain & Mental Health",
     hover_data=["P-Value", "Significant"]
 )
 fig9.add_hline(y=0, line_dash="dash", line_color="black")
-fig9 = mobile_layout(fig9, height=500)
+fig9 = base_layout(fig9, height=580)
 save_fig(fig9, "09_sleep_vs_pain_mentalhealth.html")
 
 # ── 13. CORRELATION 10: Polypharmacy ──────────────────────────────────────
@@ -343,23 +343,23 @@ fig10a = px.scatter(
     df, x="Med_Count", y="Bodily Pain Rating in Past Week",
     color="Group", trendline="ols",
     color_discrete_map=GROUP_COLORS,
-    title="No. of Medication Classes vs Pain Severity",
-    labels={"Med_Count": "Medication Classes"}
+    title="Correlation 10a: Medication Classes vs Pain Severity",
+    labels={"Med_Count": "Number of Medication Classes"}
 )
-fig10a = mobile_layout(fig10a, height=500)
+fig10a = base_layout(fig10a, height=580)
 save_fig(fig10a, "10a_polypharmacy_vs_pain.html")
 
 fig10b = px.box(
     df, x="Hospitalized (Past Year)", y="Med_Count",
     color="Group",
     color_discrete_map=GROUP_COLORS,
-    title="Hospitalization vs No. of Medication Classes",
+    title="Correlation 10b: Hospitalization vs Medication Classes",
     labels={
-        "Med_Count": "Medication Classes",
-        "Hospitalized (Past Year)": "Hospitalized"
+        "Med_Count": "Number of Medication Classes",
+        "Hospitalized (Past Year)": "Hospitalized (0=No, 1=Yes)"
     }
 )
-fig10b = mobile_layout(fig10b, height=500)
+fig10b = base_layout(fig10b, height=580)
 save_fig(fig10b, "10b_polypharmacy_vs_hospitalization.html")
 
 # ── 14. CORRELATION 11: Pain Region vs Neuropathy ─────────────────────────
@@ -389,10 +389,10 @@ fig11 = px.bar(
     pd.DataFrame(rows), x="Pain Region", y="Chi2",
     color="Group", barmode="group",
     color_discrete_map=GROUP_COLORS,
-    title="Lower Limb Pain Region vs Peripheral Neuropathy",
+    title="Correlation 11: Lower Limb Pain Region vs Peripheral Neuropathy",
     hover_data=["P-Value", "Significant"]
 )
-fig11 = mobile_layout(fig11, height=480)
+fig11 = base_layout(fig11, height=560)
 save_fig(fig11, "11_pain_region_vs_neuropathy.html")
 
 # ── 15. CORRELATION 12: Comorbidity Prevalence ────────────────────────────
@@ -416,9 +416,9 @@ fig12 = px.bar(
     pd.DataFrame(prev_rows), x="Condition", y="Prevalence (%)",
     color="Group", barmode="group",
     color_discrete_map=GROUP_COLORS,
-    title="Comorbidity Prevalence Across All Four Groups (%)"
+    title="Correlation 12: Comorbidity Prevalence Across All Four Groups (%)"
 )
-fig12 = mobile_layout(fig12, height=520)
+fig12 = base_layout(fig12, height=600)
 save_fig(fig12, "12_comorbidity_prevalence_by_group.html")
 
 print("\nAll graphs saved to docs/graphs/")

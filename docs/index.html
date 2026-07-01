@@ -119,23 +119,48 @@
             color: #3498db;
         }
 
-        .iframe-wrapper {
+        /*
+         * Scrollable iframe container.
+         * On mobile: fixed height with horizontal scroll so the full graph
+         * is accessible. Users swipe inside the box to explore the chart.
+         * On desktop: expands to full graph height, no scrollbar needed.
+         */
+        .graph-scroll {
             width: 100%;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
             border-radius: 8px;
             background: #fafafa;
-            height: clamp(280px, 55vw, 520px);
-            margin-top: 4px;
+            margin-top: 8px;
         }
 
-        .iframe-wrapper + .iframe-wrapper {
-            margin-top: 16px;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
+        .graph-scroll iframe {
             border: none;
+            display: block;
+            /* Always render at full graph width so nothing is cut off */
+            min-width: 600px;
+            width: 100%;
+            /* Height matches what analysis.py set for each graph */
+            height: var(--graph-h, 600px);
+        }
+
+        /* Tall graph for facet_row charts */
+        .graph-scroll.tall iframe { --graph-h: 850px; }
+        /* Standard graph height */
+        .graph-scroll.std  iframe { --graph-h: 620px; }
+
+        .scroll-hint {
+            font-size: 11px;
+            color: #999;
+            text-align: right;
+            margin-top: 4px;
+            display: none;
+        }
+
+        /* Show scroll hint only on narrow screens */
+        @media (max-width: 640px) {
+            .scroll-hint { display: block; }
         }
 
         .legend {
@@ -173,15 +198,8 @@
             text-align: center;
         }
 
-        .group-card h3 {
-            font-size: clamp(11px, 2.5vw, 15px);
-            margin-bottom: 8px;
-        }
-
-        .group-card span {
-            font-size: clamp(26px, 6vw, 36px);
-            font-weight: 700;
-        }
+        .group-card h3 { font-size: clamp(11px, 2.5vw, 15px); margin-bottom: 8px; }
+        .group-card span { font-size: clamp(26px, 6vw, 36px); font-weight: 700; }
 
         footer {
             text-align: center;
@@ -193,16 +211,8 @@
         }
 
         @media (max-width: 480px) {
-            nav button {
-                padding: 8px 7px;
-                font-size: 10px;
-            }
-            .iframe-wrapper {
-                height: 280px;
-            }
-            .overview-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            nav button { padding: 8px 7px; font-size: 10px; }
+            .overview-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -215,17 +225,17 @@
 
 <nav id="nav">
     <button class="active" onclick="show('overview', this)">Overview</button>
-    <button onclick="show('corr1', this)">1 · Pain & Mental Health</button>
-    <button onclick="show('corr2', this)">2 · Chronic Pain & MH</button>
-    <button onclick="show('corr3', this)">3 · ART Adherence</button>
-    <button onclick="show('corr4', this)">4 · ART Class & Neuropathy</button>
-    <button onclick="show('corr5', this)">5 · Metabolic Clustering</button>
-    <button onclick="show('corr6', this)">6 · Age & Comorbidity</button>
-    <button onclick="show('corr7', this)">7 · Age & Pain</button>
-    <button onclick="show('corr8', this)">8 · Smoking & Pain</button>
-    <button onclick="show('corr9', this)">9 · Sleep & Pain/MH</button>
+    <button onclick="show('corr1',  this)">1 · Pain &amp; Mental Health</button>
+    <button onclick="show('corr2',  this)">2 · Chronic Pain &amp; MH</button>
+    <button onclick="show('corr3',  this)">3 · ART Adherence</button>
+    <button onclick="show('corr4',  this)">4 · ART Class &amp; Neuropathy</button>
+    <button onclick="show('corr5',  this)">5 · Metabolic Clustering</button>
+    <button onclick="show('corr6',  this)">6 · Age &amp; Comorbidity</button>
+    <button onclick="show('corr7',  this)">7 · Age &amp; Pain</button>
+    <button onclick="show('corr8',  this)">8 · Smoking &amp; Pain</button>
+    <button onclick="show('corr9',  this)">9 · Sleep &amp; Pain/MH</button>
     <button onclick="show('corr10', this)">10 · Polypharmacy</button>
-    <button onclick="show('corr11', this)">11 · Pain Region & Neuropathy</button>
+    <button onclick="show('corr11', this)">11 · Pain Region &amp; Neuropathy</button>
     <button onclick="show('corr12', this)">12 · Comorbidity Prevalence</button>
 </nav>
 
@@ -238,20 +248,16 @@
             <p class="subtitle">HIV Pain Study · Cleaned Dataset Summary</p>
             <div class="overview-grid">
                 <div class="group-card" style="background:#e74c3c">
-                    <h3>HIV – Pain</h3>
-                    <span>149</span>
+                    <h3>HIV – Pain</h3><span>149</span>
                 </div>
                 <div class="group-card" style="background:#e67e22">
-                    <h3>HIV – No Pain</h3>
-                    <span>47</span>
+                    <h3>HIV – No Pain</h3><span>47</span>
                 </div>
                 <div class="group-card" style="background:#3498db">
-                    <h3>No HIV – Pain</h3>
-                    <span>113</span>
+                    <h3>No HIV – Pain</h3><span>113</span>
                 </div>
                 <div class="group-card" style="background:#2ecc71">
-                    <h3>No HIV – No Pain</h3>
-                    <span>82</span>
+                    <h3>No HIV – No Pain</h3><span>82</span>
                 </div>
             </div>
             <div class="stat-row">
@@ -288,12 +294,13 @@
                 distress, and mental health conditions lower pain tolerance and coping ability.
                 This analysis tests whether higher bodily pain ratings correlate with current depression,
                 anxiety, bipolar disorder, or other mental health conditions, broken down by group.
-                If the correlation is strong in both pain groups (HIV-Pain and No HIV-Pain) but weak
-                in No HIV-No Pain, it suggests the relationship is driven by pain rather than HIV status.
+                If the correlation is strong in both pain groups but weak in No HIV-No Pain,
+                it suggests the relationship is driven by pain rather than HIV status.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/01_pain_vs_mental_health.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
@@ -309,9 +316,10 @@
                 Patients reporting pain for over 3 months or 12+ hours daily are compared against
                 mental health condition flags across all four groups.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll tall">
                 <iframe src="graphs/02_chronic_pain_vs_mental_health.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
@@ -328,9 +336,10 @@
                 missed doses and pain rating, and point-biserial correlation between missed doses
                 and chronic pain flags. Only HIV-positive patients are included.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/03_art_adherence_vs_pain.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
@@ -340,16 +349,16 @@
             <h2>Correlation 4: ART Drug Class vs Peripheral Neuropathy</h2>
             <p class="subtitle">Chi-Square · Drug class presence vs peripheral neuropathy diagnosis</p>
             <div class="rationale">
-                Certain ART drug classes — particularly older NRTIs (Nucleoside Reverse Transcriptase
-                Inhibitors) — are known to cause peripheral neuropathy as a side effect through
-                mitochondrial toxicity. This analysis uses chi-square tests to check whether
-                patients on each drug class (NRTI, INSTI, NNRTI, PI) show significantly higher
-                rates of peripheral neuropathy, providing a real-world pharmacovigilance signal
-                from this dataset.
+                Certain ART drug classes — particularly older NRTIs — are known to cause peripheral
+                neuropathy as a side effect through mitochondrial toxicity. This analysis uses
+                chi-square tests to check whether patients on each drug class show significantly
+                higher rates of peripheral neuropathy, providing a real-world pharmacovigilance
+                signal from this dataset.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/04_art_class_vs_neuropathy.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
@@ -357,18 +366,18 @@
     <div id="corr5" class="section">
         <div class="card">
             <h2>Correlation 5: Metabolic Comorbidity Clustering</h2>
-            <p class="subtitle">Chi-Square & Point-Biserial r · Weight, diabetes, HBP, heart disease, kidney disease</p>
+            <p class="subtitle">Chi-Square &amp; Point-Biserial r · Weight, diabetes, HBP, heart disease, kidney disease</p>
             <div class="rationale">
                 Metabolic syndrome — the co-occurrence of obesity, hypertension, diabetes, and
                 cardiovascular disease — is a well-established clinical cluster. HIV itself and
-                certain ART regimens (particularly PIs) can accelerate metabolic dysfunction.
+                certain ART regimens can accelerate metabolic dysfunction.
                 This analysis tests whether these conditions co-occur at higher rates in HIV
-                groups compared to non-HIV groups, and whether the clustering pattern differs
-                by pain status.
+                groups compared to non-HIV groups.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/05_metabolic_clustering.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
@@ -381,12 +390,13 @@
                 Older age naturally accumulates more chronic conditions. However, HIV-positive
                 patients often show accelerated aging — accumulating comorbidities at younger ages
                 than HIV-negative peers due to chronic immune activation and long-term ART exposure.
-                If HIV groups show a steeper age-comorbidity slope than non-HIV groups,
-                that supports the accelerated aging hypothesis in this sample.
+                If HIV groups show a steeper age-comorbidity slope, that supports the accelerated
+                aging hypothesis in this sample.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/06_age_vs_comorbidity.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
@@ -397,15 +407,15 @@
             <p class="subtitle">Spearman r · Age vs bodily pain rating across groups</p>
             <div class="rationale">
                 Pain prevalence and severity generally increase with age due to degenerative
-                joint changes, reduced tissue resilience, and accumulating conditions like
-                arthritis. In HIV patients, neuropathic pain from long-term infection and ART
-                exposure may amplify this age-pain relationship. This scatter plot with trend
-                lines shows whether older patients report higher pain, and whether this trend
-                differs between HIV and non-HIV groups.
+                joint changes and accumulating conditions. In HIV patients, neuropathic pain
+                from long-term infection and ART exposure may amplify this relationship.
+                This scatter plot with trend lines shows whether older patients report higher
+                pain, and whether this trend differs between HIV and non-HIV groups.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/07_age_vs_pain.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
@@ -413,59 +423,59 @@
     <div id="corr8" class="section">
         <div class="card">
             <h2>Correlation 8: Smoking vs Pain Severity</h2>
-            <p class="subtitle">Point-Biserial r · Cigarette & e-cigarette use vs pain rating</p>
+            <p class="subtitle">Point-Biserial r · Cigarette &amp; e-cigarette use vs pain rating</p>
             <div class="rationale">
                 Smoking is associated with heightened pain sensitivity through nicotine-driven
                 neurological changes and increased systemic inflammation. Smokers report higher
                 pain intensity and are more likely to develop chronic pain conditions.
                 This analysis tests whether current cigarette or e-cigarette use correlates
-                with higher pain ratings, broken down by group to see if this effect is
-                amplified in HIV-positive patients.
+                with higher pain ratings, broken down by group.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/08_smoking_vs_pain.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
     <!-- CORRELATION 9 -->
     <div id="corr9" class="section">
         <div class="card">
-            <h2>Correlation 9: Sleep Condition vs Pain & Mental Health</h2>
+            <h2>Correlation 9: Sleep Condition vs Pain &amp; Mental Health</h2>
             <p class="subtitle">Point-Biserial r · Sleep disorder vs pain severity and mental health flags</p>
             <div class="rationale">
                 Sleep disruption and chronic pain form a well-documented bidirectional cycle —
                 pain interrupts sleep, and poor sleep lowers pain thresholds and increases
                 emotional reactivity, worsening mood disorders. This analysis tests whether
-                patients with a current sleep condition report higher pain severity and greater
-                rates of depression and anxiety, and whether this three-way relationship
-                (pain, sleep, mood) is stronger in specific groups.
+                patients with a current sleep condition report higher pain and greater rates
+                of depression and anxiety across all groups.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/09_sleep_vs_pain_mentalhealth.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
     <!-- CORRELATION 10 -->
     <div id="corr10" class="section">
         <div class="card">
-            <h2>Correlation 10: Polypharmacy vs Pain & Hospitalization</h2>
-            <p class="subtitle">Spearman r & Box Plot · Number of medication classes vs outcomes</p>
+            <h2>Correlation 10: Polypharmacy vs Pain &amp; Hospitalization</h2>
+            <p class="subtitle">Spearman r &amp; Box Plot · Number of medication classes vs outcomes</p>
             <div class="rationale">
                 Polypharmacy — being on multiple medication classes simultaneously — is both
-                a marker of disease burden and an independent risk factor for adverse outcomes
-                including drug interactions, side effects, and hospitalizations.
-                Patients on more medication classes likely have more complex health profiles.
+                a marker of disease burden and an independent risk factor for adverse outcomes.
                 This analysis tests whether medication count correlates with higher pain scores
                 and whether hospitalized patients are on significantly more medication classes.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/10a_polypharmacy_vs_pain.html"></iframe>
             </div>
-            <div class="iframe-wrapper">
+            <p class="scroll-hint">← Swipe to explore →</p>
+            <div class="graph-scroll std" style="margin-top:16px">
                 <iframe src="graphs/10b_polypharmacy_vs_hospitalization.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
@@ -476,15 +486,15 @@
             <p class="subtitle">Chi-Square · Feet/ankle and thigh/knee/leg pain vs neuropathy diagnosis</p>
             <div class="rationale">
                 Peripheral neuropathy typically manifests as tingling, burning, or pain in the
-                extremities — particularly the feet and lower legs (a "stocking-glove" distribution).
-                If patients reporting foot/ankle or leg pain are significantly more likely to also
-                have a peripheral neuropathy diagnosis, this serves as an internal consistency check
-                for the dataset and a clinically meaningful signal. This relationship should be
-                especially pronounced in HIV-Pain patients where neuropathy is more prevalent.
+                extremities — particularly the feet and lower legs. If patients reporting foot/ankle
+                or leg pain are significantly more likely to also have a peripheral neuropathy
+                diagnosis, this serves as an internal consistency check and a clinically meaningful
+                signal, especially in HIV-Pain patients.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/11_pain_region_vs_neuropathy.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
@@ -497,20 +507,20 @@
                 This overview chart shows the percentage of patients in each group currently
                 living with 10 key conditions: hypertension, heart disease, diabetes, cancer,
                 kidney disease, sleep disorders, depression, anxiety, peripheral neuropathy,
-                and stroke. Comparing prevalence across all four groups simultaneously reveals
-                which conditions are driven by HIV status, which by pain, and which by both —
-                providing a high-level map of the disease burden distribution in this sample.
+                and stroke. Comparing prevalence across all four groups reveals which conditions
+                are driven by HIV, which by pain, and which by both.
             </div>
-            <div class="iframe-wrapper">
+            <div class="graph-scroll std">
                 <iframe src="graphs/12_comorbidity_prevalence_by_group.html"></iframe>
             </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
 </main>
 
 <footer>
-    HIV Pain Study · Analysis Dashboard · Built with Python, Plotly & GitHub Pages
+    HIV Pain Study · Analysis Dashboard · Built with Python, Plotly &amp; GitHub Pages
 </footer>
 
 <script>
