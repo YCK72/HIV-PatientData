@@ -16,35 +16,37 @@
         header {
             background: linear-gradient(135deg, #2c3e50, #3498db);
             color: white;
-            padding: 30px 40px;
+            padding: 20px;
         }
 
-        header h1 { font-size: 28px; margin-bottom: 6px; }
-        header p  { font-size: 14px; opacity: 0.85; }
+        header h1 { font-size: clamp(16px, 4vw, 28px); margin-bottom: 6px; }
+        header p  { font-size: clamp(11px, 2.5vw, 14px); opacity: 0.85; }
 
         nav {
             background: white;
             border-bottom: 2px solid #e0e0e0;
-            padding: 0 40px;
+            padding: 0 8px;
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
+            gap: 2px;
             position: sticky;
             top: 0;
             z-index: 100;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
         }
 
         nav button {
             background: none;
             border: none;
-            padding: 14px 16px;
+            padding: 10px 10px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: clamp(10px, 2vw, 13px);
             color: #555;
             border-bottom: 3px solid transparent;
             transition: all 0.2s;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         nav button:hover { color: #3498db; }
@@ -54,7 +56,11 @@
             font-weight: 600;
         }
 
-        main { padding: 30px 40px; max-width: 1400px; margin: auto; }
+        main {
+            padding: 16px;
+            max-width: 1400px;
+            margin: auto;
+        }
 
         .section { display: none; }
         .section.active { display: block; }
@@ -62,19 +68,19 @@
         .card {
             background: white;
             border-radius: 12px;
-            padding: 28px;
-            margin-bottom: 28px;
+            padding: clamp(14px, 3vw, 28px);
+            margin-bottom: 20px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.07);
         }
 
         .card h2 {
-            font-size: 20px;
+            font-size: clamp(14px, 3vw, 20px);
             margin-bottom: 8px;
             color: #2c3e50;
         }
 
         .card .subtitle {
-            font-size: 13px;
+            font-size: clamp(11px, 2vw, 13px);
             color: #7f8c8d;
             margin-bottom: 6px;
         }
@@ -83,16 +89,16 @@
             background: #eaf4fb;
             border-left: 4px solid #3498db;
             border-radius: 4px;
-            padding: 14px 18px;
-            margin: 16px 0;
-            font-size: 14px;
+            padding: 12px 14px;
+            margin: 14px 0;
+            font-size: clamp(12px, 2vw, 14px);
             line-height: 1.7;
             color: #2c3e50;
         }
 
         .stat-row {
             display: flex;
-            gap: 16px;
+            gap: 10px;
             flex-wrap: wrap;
             margin-bottom: 16px;
         }
@@ -100,24 +106,41 @@
         .stat-box {
             background: #f8f9fa;
             border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 13px;
+            padding: 10px 14px;
+            font-size: clamp(11px, 2vw, 13px);
             border: 1px solid #e0e0e0;
+            flex: 1 1 80px;
+            text-align: center;
         }
 
-        .stat-box strong { display: block; font-size: 20px; color: #3498db; }
+        .stat-box strong {
+            display: block;
+            font-size: clamp(18px, 4vw, 24px);
+            color: #3498db;
+        }
+
+        .iframe-wrapper {
+            width: 100%;
+            overflow: hidden;
+            border-radius: 8px;
+            background: #fafafa;
+            height: clamp(280px, 55vw, 520px);
+            margin-top: 4px;
+        }
+
+        .iframe-wrapper + .iframe-wrapper {
+            margin-top: 16px;
+        }
 
         iframe {
             width: 100%;
-            height: 520px;
+            height: 100%;
             border: none;
-            border-radius: 8px;
-            background: #fafafa;
         }
 
         .legend {
             display: flex;
-            gap: 20px;
+            gap: 12px;
             flex-wrap: wrap;
             margin-top: 12px;
         }
@@ -125,40 +148,61 @@
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
+            gap: 6px;
+            font-size: clamp(11px, 2vw, 13px);
         }
 
         .dot {
-            width: 14px; height: 14px;
+            width: 12px; height: 12px;
             border-radius: 50%;
             flex-shrink: 0;
         }
 
         .overview-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+            margin-top: 16px;
         }
 
         .group-card {
             border-radius: 10px;
-            padding: 20px;
+            padding: 16px 10px;
             color: white;
             text-align: center;
         }
 
-        .group-card h3 { font-size: 15px; margin-bottom: 8px; }
-        .group-card span { font-size: 36px; font-weight: 700; }
+        .group-card h3 {
+            font-size: clamp(11px, 2.5vw, 15px);
+            margin-bottom: 8px;
+        }
+
+        .group-card span {
+            font-size: clamp(26px, 6vw, 36px);
+            font-weight: 700;
+        }
 
         footer {
             text-align: center;
-            padding: 24px;
+            padding: 20px;
             font-size: 12px;
             color: #aaa;
             border-top: 1px solid #e0e0e0;
-            margin-top: 40px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 480px) {
+            nav button {
+                padding: 8px 7px;
+                font-size: 10px;
+            }
+            .iframe-wrapper {
+                height: 280px;
+            }
+            .overview-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -192,7 +236,7 @@
         <div class="card">
             <h2>Study Overview</h2>
             <p class="subtitle">HIV Pain Study · Cleaned Dataset Summary</p>
-            <div class="overview-grid" style="margin-top:16px">
+            <div class="overview-grid">
                 <div class="group-card" style="background:#e74c3c">
                     <h3>HIV – Pain</h3>
                     <span>149</span>
@@ -212,9 +256,9 @@
             </div>
             <div class="stat-row">
                 <div class="stat-box"><strong>391</strong>Total Patients</div>
-                <div class="stat-box"><strong>30</strong>Rows Removed (cleaning)</div>
-                <div class="stat-box"><strong>80</strong>Variables Tracked</div>
-                <div class="stat-box"><strong>12</strong>Correlations Analyzed</div>
+                <div class="stat-box"><strong>30</strong>Rows Removed</div>
+                <div class="stat-box"><strong>80</strong>Variables</div>
+                <div class="stat-box"><strong>12</strong>Correlations</div>
             </div>
             <div class="rationale">
                 This dashboard presents correlation analyses from a phone-collected HIV patient dataset.
@@ -247,7 +291,9 @@
                 If the correlation is strong in both pain groups (HIV-Pain and No HIV-Pain) but weak
                 in No HIV-No Pain, it suggests the relationship is driven by pain rather than HIV status.
             </div>
-            <iframe src="graphs/01_pain_vs_mental_health.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/01_pain_vs_mental_health.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -263,7 +309,9 @@
                 Patients reporting pain for over 3 months or 12+ hours daily are compared against
                 mental health condition flags across all four groups.
             </div>
-            <iframe src="graphs/02_chronic_pain_vs_mental_health.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/02_chronic_pain_vs_mental_health.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -280,7 +328,9 @@
                 missed doses and pain rating, and point-biserial correlation between missed doses
                 and chronic pain flags. Only HIV-positive patients are included.
             </div>
-            <iframe src="graphs/03_art_adherence_vs_pain.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/03_art_adherence_vs_pain.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -297,7 +347,9 @@
                 rates of peripheral neuropathy, providing a real-world pharmacovigilance signal
                 from this dataset.
             </div>
-            <iframe src="graphs/04_art_class_vs_neuropathy.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/04_art_class_vs_neuropathy.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -314,7 +366,9 @@
                 groups compared to non-HIV groups, and whether the clustering pattern differs
                 by pain status.
             </div>
-            <iframe src="graphs/05_metabolic_clustering.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/05_metabolic_clustering.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -330,7 +384,9 @@
                 If HIV groups show a steeper age-comorbidity slope than non-HIV groups,
                 that supports the accelerated aging hypothesis in this sample.
             </div>
-            <iframe src="graphs/06_age_vs_comorbidity.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/06_age_vs_comorbidity.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -347,7 +403,9 @@
                 lines shows whether older patients report higher pain, and whether this trend
                 differs between HIV and non-HIV groups.
             </div>
-            <iframe src="graphs/07_age_vs_pain.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/07_age_vs_pain.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -364,7 +422,9 @@
                 with higher pain ratings, broken down by group to see if this effect is
                 amplified in HIV-positive patients.
             </div>
-            <iframe src="graphs/08_smoking_vs_pain.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/08_smoking_vs_pain.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -381,7 +441,9 @@
                 rates of depression and anxiety, and whether this three-way relationship
                 (pain, sleep, mood) is stronger in specific groups.
             </div>
-            <iframe src="graphs/09_sleep_vs_pain_mentalhealth.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/09_sleep_vs_pain_mentalhealth.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -398,8 +460,12 @@
                 This analysis tests whether medication count correlates with higher pain scores
                 and whether hospitalized patients are on significantly more medication classes.
             </div>
-            <iframe src="graphs/10a_polypharmacy_vs_pain.html"></iframe>
-            <iframe src="graphs/10b_polypharmacy_vs_hospitalization.html" style="margin-top:16px"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/10a_polypharmacy_vs_pain.html"></iframe>
+            </div>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/10b_polypharmacy_vs_hospitalization.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -416,7 +482,9 @@
                 for the dataset and a clinically meaningful signal. This relationship should be
                 especially pronounced in HIV-Pain patients where neuropathy is more prevalent.
             </div>
-            <iframe src="graphs/11_pain_region_vs_neuropathy.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/11_pain_region_vs_neuropathy.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -433,7 +501,9 @@
                 which conditions are driven by HIV status, which by pain, and which by both —
                 providing a high-level map of the disease burden distribution in this sample.
             </div>
-            <iframe src="graphs/12_comorbidity_prevalence_by_group.html"></iframe>
+            <div class="iframe-wrapper">
+                <iframe src="graphs/12_comorbidity_prevalence_by_group.html"></iframe>
+            </div>
         </div>
     </div>
 
@@ -449,6 +519,7 @@
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         btn.classList.add('active');
+        window.scrollTo(0, 0);
     }
 </script>
 
