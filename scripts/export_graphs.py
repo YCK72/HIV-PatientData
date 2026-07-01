@@ -7,13 +7,21 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-# ── 1. Paths ───────────────────────────────────────────────────────────────
+# ── 1. Check for kaleido (needed for image export) ────────────────────────
+try:
+    import kaleido
+except ImportError:
+    print("ERROR: kaleido is not installed.")
+    print("Run: pip install kaleido")
+    exit(1)
+
+# ── 2. Paths ───────────────────────────────────────────────────────────────
 script_dir = os.path.dirname(os.path.abspath(__file__))
 data_path  = os.path.join(script_dir, '..', 'Data', 'Cleaned', 'cleaned_data.csv')
-output_dir = os.path.join(script_dir, '..', 'docs', 'graphs')
+output_dir = os.path.join(script_dir, '..', 'Data', 'Exported_Images')
 os.makedirs(output_dir, exist_ok=True)
 
-# ── 2. Load & standardize ──────────────────────────────────────────────────
+# ── 3. Load & standardize ──────────────────────────────────────────────────
 df = pd.read_csv(data_path)
 
 group_mapping = {
@@ -34,52 +42,42 @@ GROUP_COLORS = {
 }
 
 print(f"Loaded {len(df)} patients")
+print(f"Saving images to: {output_dir}\n")
 
-# ── 3. Helpers ─────────────────────────────────────────────────────────────
-PLOTLY_CONFIG = {
-    'scrollZoom': False,
-    'displaylogo': False,
-    'modeBarButtonsToRemove': [
-        'zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d',
-        'autoScale2d', 'resetScale2d',
-        'lasso2d', 'select2d'
-    ]
-}
-
+# ── 4. Helpers ─────────────────────────────────────────────────────────────
 def save_fig(fig, filename):
-    path = os.path.join(output_dir, filename)
-    fig.write_html(path, include_plotlyjs='cdn', config=PLOTLY_CONFIG)
-    print(f"  Saved: {filename}")
+    """Save as both PNG (high-res) and PDF (vector/print quality)."""
+    base = os.path.join(output_dir, filename)
+    fig.write_image(base + ".png", width=1400, height=fig.layout.height or 600,
+                    scale=2)  # scale=2 → 2x resolution (retina quality)
+    fig.write_image(base + ".pdf", width=1400, height=fig.layout.height or 600)
+    print(f"  Saved: {filename}.png  +  {filename}.pdf")
 
 def base_layout(fig, height=580):
     fig.update_layout(
-        autosize=True,
+        autosize=False,
+        width=1400,
         height=height,
-        margin=dict(l=50, r=30, t=70, b=160),
+        margin=dict(l=80, r=40, t=80, b=180),
         legend=dict(
             orientation="h",
             yanchor="bottom",
-            y=-0.38,
+            y=-0.32,
             xanchor="center",
             x=0.5,
-            font=dict(size=12),
-            itemwidth=110
+            font=dict(size=13),
+            itemwidth=120
         ),
-        font=dict(size=12),
-        title_font=dict(size=15),
-        xaxis=dict(
-            tickfont=dict(size=11),
-            title_font=dict(size=12),
-            tickangle=-25
-        ),
-        yaxis=dict(
-            tickfont=dict(size=11),
-            title_font=dict(size=12)
-        )
+        font=dict(size=13),
+        title_font=dict(size=17),
+        xaxis=dict(tickfont=dict(size=12), title_font=dict(size=13), tickangle=-25),
+        yaxis=dict(tickfont=dict(size=12), title_font=dict(size=13)),
+        plot_bgcolor="white",
+        paper_bgcolor="white"
     )
     return fig
 
-# ── 4. CORRELATION 1: Pain Severity vs Mental Health ──────────────────────
+# ── 5. CORRELATION 1: Pain Severity vs Mental Health ──────────────────────
 mental_health_cols = [
     "Major Depression Now", "Anxiety Disorder Now",
     "Bipolar Disorder Now", "Other Mental Health Conditions Now"
@@ -111,9 +109,9 @@ fig1 = px.bar(
 )
 fig1.add_hline(y=0, line_dash="dash", line_color="black")
 fig1 = base_layout(fig1, height=600)
-save_fig(fig1, "01_pain_vs_mental_health.html")
+save_fig(fig1, "01_pain_vs_mental_health")
 
-# ── 5. CORRELATION 2: Chronic Pain Duration vs Mental Health ──────────────
+# ── 6. CORRELATION 2: Chronic Pain Duration vs Mental Health ──────────────
 chronic_cols = ["Pain > 3 Months", "Pain >12hrs or More 6 months"]
 rows = []
 for pain_col in chronic_cols:
@@ -138,26 +136,25 @@ fig2 = px.bar(
     color="Group", barmode="group",
     facet_row="Pain Duration",
     color_discrete_map=GROUP_COLORS,
-    title="Correlation 2: Chronic Pain Duration vs Mental Health",
+    title="Correlation 2: Chronic Pain Duration vs Mental Health Conditions",
     hover_data=["P-Value", "Significant"],
 )
 fig2.add_hline(y=0, line_dash="dash", line_color="black")
 fig2.update_layout(
-    autosize=True,
-    height=800,
-    margin=dict(l=50, r=30, t=70, b=180),
+    autosize=False, width=1400, height=900,
+    margin=dict(l=80, r=40, t=80, b=200),
     legend=dict(
-        orientation="h", yanchor="bottom", y=-0.25,
-        xanchor="center", x=0.5, font=dict(size=12), itemwidth=110
+        orientation="h", yanchor="bottom", y=-0.24,
+        xanchor="center", x=0.5, font=dict(size=13), itemwidth=120
     ),
-    font=dict(size=12),
-    title_font=dict(size=15)
+    font=dict(size=13), title_font=dict(size=17),
+    plot_bgcolor="white", paper_bgcolor="white"
 )
-fig2.for_each_xaxis(lambda ax: ax.update(tickangle=-25, tickfont=dict(size=11)))
-fig2.for_each_yaxis(lambda ax: ax.update(tickfont=dict(size=11)))
-save_fig(fig2, "02_chronic_pain_vs_mental_health.html")
+fig2.for_each_xaxis(lambda ax: ax.update(tickangle=-25, tickfont=dict(size=12)))
+fig2.for_each_yaxis(lambda ax: ax.update(tickfont=dict(size=12)))
+save_fig(fig2, "02_chronic_pain_vs_mental_health")
 
-# ── 6. CORRELATION 3: ART Adherence vs Pain ───────────────────────────────
+# ── 7. CORRELATION 3: ART Adherence vs Pain ───────────────────────────────
 rows = []
 hiv_df = df[df["Group"].isin(["HIV - Pain", "HIV - No Pain"])].dropna(
     subset=["Doses ART missed?", "Bodily Pain Rating in Past Week"])
@@ -183,9 +180,9 @@ fig3 = px.bar(
 fig3.update_traces(texttemplate="p=%{text}", textposition="outside")
 fig3.add_hline(y=0, line_dash="dash", line_color="black")
 fig3 = base_layout(fig3, height=580)
-save_fig(fig3, "03_art_adherence_vs_pain.html")
+save_fig(fig3, "03_art_adherence_vs_pain")
 
-# ── 7. CORRELATION 4: ART Drug Class vs Peripheral Neuropathy ─────────────
+# ── 8. CORRELATION 4: ART Drug Class vs Peripheral Neuropathy ─────────────
 art_cols = [
     "ART?_Nucleoside reverse transcriptase inhibitors (NRTIs)",
     "ART?_Integrase Strand Transfer Inhibitor (INSTI)",
@@ -217,9 +214,9 @@ fig4 = px.bar(
     hover_data=["P-Value"]
 )
 fig4 = base_layout(fig4, height=560)
-save_fig(fig4, "04_art_class_vs_neuropathy.html")
+save_fig(fig4, "04_art_class_vs_neuropathy")
 
-# ── 8. CORRELATION 5: Metabolic Comorbidity Clustering ────────────────────
+# ── 9. CORRELATION 5: Metabolic Comorbidity Clustering ────────────────────
 metabolic_pairs = [
     ("Weight", "Diabetes Now"),
     ("Weight", "HBP Now"),
@@ -255,9 +252,9 @@ fig5 = px.bar(
     hover_data=["P-Value", "Significant"]
 )
 fig5 = base_layout(fig5, height=600)
-save_fig(fig5, "05_metabolic_clustering.html")
+save_fig(fig5, "05_metabolic_clustering")
 
-# ── 9. CORRELATION 6: Age vs Comorbidity Burden ───────────────────────────
+# ── 10. CORRELATION 6: Age vs Comorbidity Burden ──────────────────────────
 comorbidity_now_cols = [
     c for c in df.columns
     if c.endswith("Now") and c != "Asthma/Breathing Problems  Now"
@@ -272,19 +269,9 @@ fig6 = px.scatter(
     labels={"Comorbidity_Count": "Number of Current Conditions"}
 )
 fig6 = base_layout(fig6, height=600)
-save_fig(fig6, "06_age_vs_comorbidity.html")
+save_fig(fig6, "06_age_vs_comorbidity")
 
-rows = []
-for group in df["Group"].unique():
-    g = df[df["Group"] == group].dropna(subset=["Age", "Comorbidity_Count"])
-    r, p = stats.spearmanr(g["Age"], g["Comorbidity_Count"])
-    rows.append({"Group": group,
-                 "Spearman r": round(r, 3),
-                 "P-Value": round(p, 4)})
-print("\nCorrelation 6 - Age vs Comorbidity:")
-print(pd.DataFrame(rows).to_string(index=False))
-
-# ── 10. CORRELATION 7: Age vs Pain Severity ───────────────────────────────
+# ── 11. CORRELATION 7: Age vs Pain Severity ───────────────────────────────
 fig7 = px.scatter(
     df, x="Age", y="Bodily Pain Rating in Past Week",
     color="Group", trendline="ols",
@@ -292,9 +279,9 @@ fig7 = px.scatter(
     title="Correlation 7: Age vs Pain Severity by Group"
 )
 fig7 = base_layout(fig7, height=600)
-save_fig(fig7, "07_age_vs_pain.html")
+save_fig(fig7, "07_age_vs_pain")
 
-# ── 11. CORRELATION 8: Smoking vs Pain ───────────────────────────────────
+# ── 12. CORRELATION 8: Smoking vs Pain ───────────────────────────────────
 rows = []
 for group in df["Group"].unique():
     for smoke_col, label in [
@@ -320,9 +307,9 @@ fig8 = px.bar(
 )
 fig8.add_hline(y=0, line_dash="dash", line_color="black")
 fig8 = base_layout(fig8, height=600)
-save_fig(fig8, "08_smoking_vs_pain.html")
+save_fig(fig8, "08_smoking_vs_pain")
 
-# ── 12. CORRELATION 9: Sleep vs Pain & Mental Health ─────────────────────
+# ── 13. CORRELATION 9: Sleep vs Pain & Mental Health ─────────────────────
 sleep_targets = ["Bodily Pain Rating in Past Week"] + mental_health_cols
 
 rows = []
@@ -351,9 +338,9 @@ fig9 = px.bar(
 )
 fig9.add_hline(y=0, line_dash="dash", line_color="black")
 fig9 = base_layout(fig9, height=600)
-save_fig(fig9, "09_sleep_vs_pain_mentalhealth.html")
+save_fig(fig9, "09_sleep_vs_pain_mentalhealth")
 
-# ── 13. CORRELATION 10: Polypharmacy ──────────────────────────────────────
+# ── 14. CORRELATION 10: Polypharmacy ──────────────────────────────────────
 med_class_cols = [c for c in df.columns if c.startswith("Medication Class_")]
 df["Med_Count"] = df[med_class_cols].sum(axis=1)
 
@@ -365,7 +352,7 @@ fig10a = px.scatter(
     labels={"Med_Count": "Number of Medication Classes"}
 )
 fig10a = base_layout(fig10a, height=600)
-save_fig(fig10a, "10a_polypharmacy_vs_pain.html")
+save_fig(fig10a, "10a_polypharmacy_vs_pain")
 
 fig10b = px.box(
     df, x="Hospitalized (Past Year)", y="Med_Count",
@@ -378,9 +365,9 @@ fig10b = px.box(
     }
 )
 fig10b = base_layout(fig10b, height=600)
-save_fig(fig10b, "10b_polypharmacy_vs_hospitalization.html")
+save_fig(fig10b, "10b_polypharmacy_vs_hospitalization")
 
-# ── 14. CORRELATION 11: Pain Region vs Neuropathy ─────────────────────────
+# ── 15. CORRELATION 11: Pain Region vs Neuropathy ─────────────────────────
 pain_region_cols = [
     "Parts That Tend to Be Most Pain (0: No | 1: Yes | NA: Not Disclosed)_Feet/Ankle",
     "Parts That Tend to Be Most Pain (0: No | 1: Yes | NA: Not Disclosed)_Thigh/Knee/Leg Pain"
@@ -411,9 +398,9 @@ fig11 = px.bar(
     hover_data=["P-Value", "Significant"]
 )
 fig11 = base_layout(fig11, height=580)
-save_fig(fig11, "11_pain_region_vs_neuropathy.html")
+save_fig(fig11, "11_pain_region_vs_neuropathy")
 
-# ── 15. CORRELATION 12: Comorbidity Prevalence ────────────────────────────
+# ── 16. CORRELATION 12: Comorbidity Prevalence ────────────────────────────
 comorbidity_cols = [
     "HBP Now", "Heart Disease Now", "Diabetes Now", "Cancer Now",
     "Kidney Disease Now", "Sleep Condition Now", "Major Depression Now",
@@ -437,6 +424,7 @@ fig12 = px.bar(
     title="Correlation 12: Comorbidity Prevalence Across All Four Groups (%)"
 )
 fig12 = base_layout(fig12, height=620)
-save_fig(fig12, "12_comorbidity_prevalence_by_group.html")
+save_fig(fig12, "12_comorbidity_prevalence_by_group")
 
-print("\nAll graphs saved to docs/graphs/")
+print(f"\nDone! {13} graphs exported as PNG + PDF")
+print(f"Location: {output_dir}")
