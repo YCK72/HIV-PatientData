@@ -21,7 +21,7 @@ group_mapping = {
 }
 df["Group"] = df["Group"].map(group_mapping)
 
-output_dir = '../web/graphs'
+output_dir = '../docs/graphs'
 os.makedirs(output_dir, exist_ok=True)
 
 GROUP_COLORS = {
