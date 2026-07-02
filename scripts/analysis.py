@@ -102,46 +102,65 @@ n_excluded     = n_total - n_included
 consort = go.Figure()
 boxes = [
     # (x_center, y_center, width, height, label, color)
-    (0.5, 0.93, 0.38, 0.10, f"Recruited<br><b>{n_total}</b> patients", "#2c3e50"),
-    (0.5, 0.73, 0.38, 0.10, f"Excluded<br><b>{n_excluded}</b><br>(Missing >50% or empty records)", "#e74c3c"),
-    (0.5, 0.53, 0.38, 0.10, f"Included<br><b>{n_included}</b> patients", "#27ae60"),
-    (0.13, 0.25, 0.20, 0.13, f"HIV + Pain<br><b>{n_hiv_pain}</b>",     "#e74c3c"),
-    (0.38, 0.25, 0.20, 0.13, f"HIV + No Pain<br><b>{n_hiv_nopain}</b>","#e67e22"),
-    (0.63, 0.25, 0.20, 0.13, f"No HIV + Pain<br><b>{n_nohiv_pain}</b>","#3498db"),
-    (0.88, 0.25, 0.20, 0.13, f"No HIV + No Pain<br><b>{n_nohiv_nopain}</b>","#2ecc71"),
+    (0.5,  0.93, 0.38, 0.10, f"Recruited<br><b>{n_total}</b> patients",                             "#2c3e50"),
+    (0.5,  0.73, 0.38, 0.10, f"Excluded  <b>{n_excluded}</b><br>(Missing >50% or empty records)",   "#e74c3c"),
+    (0.5,  0.53, 0.38, 0.10, f"Included<br><b>{n_included}</b> patients",                           "#27ae60"),
+    (0.13, 0.25, 0.20, 0.13, f"HIV + Pain<br><b>{n_hiv_pain}</b>",                                  "#e74c3c"),
+    (0.38, 0.25, 0.20, 0.13, f"HIV + No Pain<br><b>{n_hiv_nopain}</b>",                             "#e67e22"),
+    (0.63, 0.25, 0.20, 0.13, f"No HIV + Pain<br><b>{n_nohiv_pain}</b>",                             "#3498db"),
+    (0.88, 0.25, 0.20, 0.13, f"No HIV + No Pain<br><b>{n_nohiv_nopain}</b>",                        "#2ecc71"),
 ]
 for (x, y, w, h, label, color) in boxes:
     consort.add_shape(type="rect",
-                      x0=x - w / 2, x1=x + w / 2, y0=y - h / 2, y1=y + h / 2,
-                      xref="paper", yref="paper",
-                      line=dict(color=color, width=2),
-                      fillcolor=color, opacity=0.15)
+        x0=x-w/2, x1=x+w/2, y0=y-h/2, y1=y+h/2,
+        xref="paper", yref="paper",
+        line=dict(color=color, width=2),
+        fillcolor=color, opacity=0.15)
     consort.add_annotation(x=x, y=y, text=label,
-                           xref="paper", yref="paper",
-                           showarrow=False, font=dict(size=12, color="#2c3e50"), align="center")
-# Arrows: line shapes + triangle markers (axref="paper" not supported in this Plotly version)
-for (x0, y0, x1, y1) in [
-    (0.5, 0.88, 0.5, 0.78),
-    (0.5, 0.68, 0.5, 0.58),
-    (0.5, 0.48, 0.13, 0.32),
-    (0.5, 0.48, 0.38, 0.32),
-    (0.5, 0.48, 0.63, 0.32),
-    (0.5, 0.48, 0.88, 0.32),
-]:
+        xref="paper", yref="paper",
+        showarrow=False, font=dict(size=12, color="#2c3e50"), align="center")
+
+# Arrows drawn as lines + arrowhead triangles using shapes
+# (avoids axref="paper" which is not supported in older Plotly versions)
+arrow_lines = [
+    (0.5, 0.88, 0.5, 0.78),    # recruited → excluded
+    (0.5, 0.68, 0.5, 0.58),    # excluded → included
+    (0.5, 0.48, 0.13, 0.32),   # included → HIV Pain
+    (0.5, 0.48, 0.38, 0.32),   # included → HIV No Pain
+    (0.5, 0.48, 0.63, 0.32),   # included → No HIV Pain
+    (0.5, 0.48, 0.88, 0.32),   # included → No HIV No Pain
+]
+for (x0, y0, x1, y1) in arrow_lines:
+    # Line segment
     consort.add_shape(type="line",
         x0=x0, y0=y0, x1=x1, y1=y1,
         xref="paper", yref="paper",
         line=dict(color="#555", width=1.5))
+    # Arrowhead: small filled triangle at the endpoint
+    # Use a tiny scatter marker instead (triangle-down)
     consort.add_trace(go.Scatter(
         x=[x1], y=[y1], mode="markers",
         marker=dict(symbol="triangle-down", size=10, color="#555"),
         showlegend=False, hoverinfo="skip"
     ))
+consort.update_layout(
+    title="Figure 1: Study Flow Diagram (CONSORT)",
+    xaxis=dict(visible=False, range=[0, 1]),
+    yaxis=dict(visible=False, range=[0.05, 1.05]),
+    height=620, plot_bgcolor="white", paper_bgcolor="white",
+    margin=dict(l=20, r=20, t=60, b=20)
+)
+save_fig(consort, "p1_01_consort_flow.html")
 
 # ── P1-Fig02a: Sex Distribution by Group ──────────────────────────────────
-# NOTE: adjust "Sex" to your actual column name (e.g. "Gender", "Sex at Birth")
-sex_col = "Sex"
-if sex_col in df.columns:
+# Auto-detect sex column (exact match first, then partial)
+sex_col = next((c for c in df.columns if c.lower() in [
+    "sex", "gender", "sex at birth", "biological sex",
+    "patient sex", "sex (m/f)"]), None)
+if sex_col is None:
+    sex_col = next((c for c in df.columns if any(
+        x in c.lower() for x in ["sex", "gender", "male", "female"])), None)
+if sex_col:
     sex_df = df.groupby(["Group", sex_col]).size().reset_index(name="Count")
     sex_df["Pct"] = sex_df.groupby("Group")["Count"].transform(
         lambda x: round(x / x.sum() * 100, 1))
@@ -306,9 +325,11 @@ save_fig(fig_sev_reg, "p1_08_pain_severity_vs_regions.html")
 try:
     import statsmodels.formula.api as smf
 
+    # Binary outcome: pain (Pain vs No Pain)
     df["Pain_Binary"] = (df["Pain_Status"] == "Pain").astype(int)
     df["HIV_Binary"]  = (df["HIV_Status"]  == "HIV+").astype(int)
 
+    # Candidate predictors — adjust column names to match your dataset
     predictor_map = {
         "Age":               "Age",
         "Weight":            "Weight",
@@ -320,21 +341,22 @@ try:
         "Med Count":         "Med_Count",
         "Comorbidity Count": "Comorbidity_Count",
     }
+    # Keep only columns that exist in the dataset
     valid_preds = {k: v for k, v in predictor_map.items() if v in df.columns}
 
     model_df = df[["Pain_Binary"] + list(valid_preds.values())].dropna()
     model_df.columns = ["Pain_Binary"] + list(valid_preds.keys())
 
-    # Drop zero-variance columns (causes singular matrix)
+    # Drop zero-variance predictors (causes singular Hessian / LinAlgError)
     zero_var = [c for c in model_df.columns[1:] if model_df[c].nunique() < 2]
     for c in zero_var:
         print(f"  Dropping zero-variance predictor: {c}")
-        model_df = model_df.drop(columns=[c])
+    model_df = model_df.drop(columns=zero_var)
 
     predictors = [c for c in model_df.columns if c != "Pain_Binary"]
     formula = "Pain_Binary ~ " + " + ".join([f"Q('{k}')" for k in predictors])
 
-    # Try newton (default), fall back to bfgs if singular
+    # Try Newton-Raphson first; fall back to BFGS if Hessian is singular
     try:
         model = smf.logit(formula, data=model_df).fit(disp=False)
     except Exception:
@@ -351,10 +373,10 @@ try:
         label = term.replace("Q('", "").replace("')", "")
         or_rows.append({
             "Predictor":   label,
-            "OR":          round(np.exp(coef),   3),
-            "CI_Lo":       round(np.exp(ci_lo),  3),
-            "CI_Hi":       round(np.exp(ci_hi),  3),
-            "P":           round(p_val,           4),
+            "OR":          round(np.exp(coef),  3),
+            "CI_Lo":       round(np.exp(ci_lo), 3),
+            "CI_Hi":       round(np.exp(ci_hi), 3),
+            "P":           round(p_val,          4),
             "Significant": p_val < 0.05
         })
 
@@ -385,9 +407,10 @@ try:
     save_fig(fig_forest, "p1_09_logistic_regression_forest.html")
 
 except ImportError:
-    print("  statsmodels not installed — skipping (pip install statsmodels)")
+    print("  statsmodels not installed — skipping forest plot (pip install statsmodels)")
 except Exception as e:
     print(f"  Logistic regression failed: {e} — skipping forest plot")
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 # PAPER 2 FIGURES
@@ -774,8 +797,16 @@ fig_comor_age = base_layout(fig_comor_age, height=500)
 save_fig(fig_comor_age, "age_03_comorbidity_by_age.html")
 
 # ── Sex-Specific Figures ───────────────────────────────────────────────────
-# NOTE: Change "Sex" below to your actual column name
-sex_col = next((c for c in df.columns if c.lower() in ["sex", "gender"]), None)
+# Auto-detect sex/gender column — tries exact names first, then partial match
+sex_col = next((c for c in df.columns if c.lower() in [
+    "sex", "gender", "sex at birth", "biological sex",
+    "patient sex", "sex (m/f)"]), None)
+if sex_col is None:
+    sex_col = next((c for c in df.columns if any(
+        x in c.lower() for x in ["sex", "gender", "male", "female"])), None)
+if sex_col is None:
+    print("  NOTE: No sex/gender column found — skipping sex figures.")
+    print("  Tip: manually set sex_col = 'YourColumnName' here.")
 if sex_col:
     # Pain prevalence by sex
     sex_pain = df.groupby(sex_col).apply(
