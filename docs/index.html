@@ -3,215 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HIV Pain Study - Analysis Dashboard</title>
+    <title>HIV Pain Study — Analysis Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f0f2f5;
-            color: #2c3e50;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #2c3e50; }
 
         header {
             background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-            padding: 20px;
+            color: white; padding: 20px;
         }
-
         header h1 { font-size: clamp(16px, 4vw, 28px); margin-bottom: 6px; }
         header p  { font-size: clamp(11px, 2.5vw, 14px); opacity: 0.85; }
 
-        nav {
+        /* ── Tab bar ── */
+        .tab-bar {
             background: white;
             border-bottom: 2px solid #e0e0e0;
-            padding: 0 8px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            position: sticky; top: 0; z-index: 100;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             overflow-x: auto;
         }
-
-        nav button {
-            background: none;
-            border: none;
-            padding: 10px 10px;
-            cursor: pointer;
-            font-size: clamp(10px, 2vw, 13px);
-            color: #555;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-            white-space: nowrap;
-            flex-shrink: 0;
+        .paper-nav {
+            display: flex; gap: 0;
+            border-bottom: 1px solid #e8e8e8;
+            padding: 0 12px;
         }
-
-        nav button:hover { color: #3498db; }
-        nav button.active {
-            color: #3498db;
-            border-bottom-color: #3498db;
-            font-weight: 600;
+        .paper-btn {
+            background: none; border: none; padding: 10px 18px;
+            font-size: clamp(11px, 2vw, 14px); cursor: pointer;
+            color: #666; border-bottom: 3px solid transparent;
+            transition: all 0.2s; font-weight: 600; white-space: nowrap;
         }
+        .paper-btn:hover { color: #3498db; }
+        .paper-btn.active { color: #3498db; border-bottom-color: #3498db; }
 
-        main {
-            padding: 16px;
-            max-width: 1400px;
-            margin: auto;
+        .fig-nav {
+            display: flex; flex-wrap: nowrap; gap: 2px;
+            padding: 0 8px; overflow-x: auto;
         }
+        .fig-btn {
+            background: none; border: none; padding: 9px 10px;
+            cursor: pointer; font-size: clamp(10px, 1.8vw, 12px);
+            color: #555; border-bottom: 3px solid transparent;
+            transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+        }
+        .fig-btn:hover { color: #3498db; }
+        .fig-btn.active { color: #3498db; border-bottom-color: #3498db; font-weight: 600; }
 
-        .section { display: none; }
-        .section.active { display: block; }
+        main { padding: 16px; max-width: 1400px; margin: auto; }
+
+        .paper-section { display: none; }
+        .paper-section.active { display: block; }
+        .fig-section { display: none; }
+        .fig-section.active { display: block; }
 
         .card {
-            background: white;
-            border-radius: 12px;
+            background: white; border-radius: 12px;
             padding: clamp(14px, 3vw, 28px);
             margin-bottom: 20px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.07);
         }
-
-        .card h2 {
-            font-size: clamp(14px, 3vw, 20px);
-            margin-bottom: 8px;
-            color: #2c3e50;
-        }
-
-        .card .subtitle {
-            font-size: clamp(11px, 2vw, 13px);
-            color: #7f8c8d;
-            margin-bottom: 6px;
-        }
+        .card h2 { font-size: clamp(14px, 3vw, 20px); margin-bottom: 8px; color: #2c3e50; }
+        .card .subtitle { font-size: clamp(11px,2vw,13px); color: #7f8c8d; margin-bottom: 6px; }
 
         .rationale {
-            background: #eaf4fb;
-            border-left: 4px solid #3498db;
-            border-radius: 4px;
-            padding: 12px 14px;
-            margin: 14px 0;
-            font-size: clamp(12px, 2vw, 14px);
-            line-height: 1.7;
-            color: #2c3e50;
+            background: #eaf4fb; border-left: 4px solid #3498db;
+            border-radius: 4px; padding: 12px 14px; margin: 14px 0;
+            font-size: clamp(12px, 2vw, 14px); line-height: 1.7; color: #2c3e50;
         }
 
-        .stat-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-
+        .stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
         .stat-box {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: clamp(11px, 2vw, 13px);
-            border: 1px solid #e0e0e0;
-            flex: 1 1 80px;
-            text-align: center;
+            background: #f8f9fa; border-radius: 8px;
+            padding: 10px 14px; font-size: clamp(11px,2vw,13px);
+            border: 1px solid #e0e0e0; flex: 1 1 80px; text-align: center;
         }
+        .stat-box strong { display: block; font-size: clamp(18px,4vw,24px); color: #3498db; }
 
-        .stat-box strong {
-            display: block;
-            font-size: clamp(18px, 4vw, 24px);
-            color: #3498db;
-        }
-
-        /*
-         * Scrollable iframe container.
-         * On mobile: fixed height with horizontal scroll so the full graph
-         * is accessible. Users swipe inside the box to explore the chart.
-         * On desktop: expands to full graph height, no scrollbar needed.
-         */
         .graph-scroll {
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
+            width: 100%; overflow-x: auto; overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
-            border-radius: 8px;
-            background: #fafafa;
-            margin-top: 8px;
+            border-radius: 8px; background: #fafafa; margin-top: 8px;
         }
-
         .graph-scroll iframe {
-            border: none;
-            display: block;
-            /* Always render at full graph width so nothing is cut off */
-            min-width: 600px;
-            width: 100%;
-            /* Height matches what analysis.py set for each graph */
-            height: var(--graph-h, 600px);
+            border: none; display: block;
+            min-width: 600px; width: 100%;
+            height: var(--graph-h, 620px);
         }
-
-        /* Tall graph for facet_row charts */
         .graph-scroll.tall iframe { --graph-h: 850px; }
-        /* Standard graph height */
         .graph-scroll.std  iframe { --graph-h: 620px; }
+        .graph-scroll.sm   iframe { --graph-h: 530px; }
 
         .scroll-hint {
-            font-size: 11px;
-            color: #999;
-            text-align: right;
-            margin-top: 4px;
-            display: none;
+            font-size: 11px; color: #999; text-align: right; margin-top: 4px; display: none;
         }
+        @media (max-width: 640px) { .scroll-hint { display: block; } }
 
-        /* Show scroll hint only on narrow screens */
-        @media (max-width: 640px) {
-            .scroll-hint { display: block; }
-        }
-
-        .legend {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 12px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: clamp(11px, 2vw, 13px);
-        }
-
-        .dot {
-            width: 12px; height: 12px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
+        .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: clamp(11px,2vw,13px); }
+        .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
 
         .overview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-            margin-top: 16px;
+            gap: 12px; margin-bottom: 20px; margin-top: 16px;
         }
-
         .group-card {
-            border-radius: 10px;
-            padding: 16px 10px;
-            color: white;
-            text-align: center;
+            border-radius: 10px; padding: 16px 10px;
+            color: white; text-align: center;
         }
+        .group-card h3 { font-size: clamp(11px,2.5vw,15px); margin-bottom: 8px; }
+        .group-card span { font-size: clamp(26px,6vw,36px); font-weight: 700; }
 
-        .group-card h3 { font-size: clamp(11px, 2.5vw, 15px); margin-bottom: 8px; }
-        .group-card span { font-size: clamp(26px, 6vw, 36px); font-weight: 700; }
+        .fig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 800px) { .fig-grid { grid-template-columns: 1fr; } }
+
+        .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            font-size: 11px; font-weight: 600; margin-left: 8px; vertical-align: middle;
+        }
+        .badge-p1 { background: #e8f4fd; color: #2980b9; }
+        .badge-p2 { background: #eafaf1; color: #27ae60; }
 
         footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 12px;
-            color: #aaa;
-            border-top: 1px solid #e0e0e0;
-            margin-top: 30px;
+            text-align: center; padding: 20px; font-size: 12px;
+            color: #aaa; border-top: 1px solid #e0e0e0; margin-top: 30px;
         }
-
         @media (max-width: 480px) {
-            nav button { padding: 8px 7px; font-size: 10px; }
+            .paper-btn { padding: 8px 10px; font-size: 11px; }
             .overview-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
@@ -220,302 +139,811 @@
 
 <header>
     <h1>HIV Pain Study — Analysis Dashboard</h1>
-    <p>Interactive correlation analysis across 391 patients · 4 groups · 12 correlations</p>
+    <p>391 patients · 4 groups · Paper 1 (HIV &amp; Pain Phenotype) + Paper 2 (Clinical Correlates) + 12 Correlations</p>
 </header>
 
-<nav id="nav">
-    <button class="active" onclick="show('overview', this)">Overview</button>
-    <button onclick="show('corr1',  this)">1 · Pain &amp; Mental Health</button>
-    <button onclick="show('corr2',  this)">2 · Chronic Pain &amp; MH</button>
-    <button onclick="show('corr3',  this)">3 · ART Adherence</button>
-    <button onclick="show('corr4',  this)">4 · ART Class &amp; Neuropathy</button>
-    <button onclick="show('corr5',  this)">5 · Metabolic Clustering</button>
-    <button onclick="show('corr6',  this)">6 · Age &amp; Comorbidity</button>
-    <button onclick="show('corr7',  this)">7 · Age &amp; Pain</button>
-    <button onclick="show('corr8',  this)">8 · Smoking &amp; Pain</button>
-    <button onclick="show('corr9',  this)">9 · Sleep &amp; Pain/MH</button>
-    <button onclick="show('corr10', this)">10 · Polypharmacy</button>
-    <button onclick="show('corr11', this)">11 · Pain Region &amp; Neuropathy</button>
-    <button onclick="show('corr12', this)">12 · Comorbidity Prevalence</button>
-</nav>
+<!-- ── Top-level paper tabs ── -->
+<div class="tab-bar">
+    <div class="paper-nav">
+        <button class="paper-btn active" onclick="showPaper('overview', this)">Overview</button>
+        <button class="paper-btn" onclick="showPaper('paper1',   this)">Paper 1 — HIV &amp; Pain Phenotype</button>
+        <button class="paper-btn" onclick="showPaper('paper2',   this)">Paper 2 — Clinical Correlates</button>
+        <button class="paper-btn" onclick="showPaper('corrns',   this)">Correlations 1–12</button>
+        <button class="paper-btn" onclick="showPaper('agesex',   this)">Age / Sex / Race</button>
+    </div>
+    <!-- Sub-tabs rendered per paper -->
+    <div class="fig-nav" id="figNav"></div>
+</div>
 
 <main>
 
-    <!-- OVERVIEW -->
-    <div id="overview" class="section active">
+<!-- ══════════════ OVERVIEW ══════════════ -->
+<div id="overview" class="paper-section active">
+    <div class="card">
+        <h2>Study Overview</h2>
+        <p class="subtitle">HIV Pain Study · Cleaned Dataset Summary</p>
+        <div class="overview-grid">
+            <div class="group-card" style="background:#e74c3c"><h3>HIV – Pain</h3><span>149</span></div>
+            <div class="group-card" style="background:#e67e22"><h3>HIV – No Pain</h3><span>47</span></div>
+            <div class="group-card" style="background:#3498db"><h3>No HIV – Pain</h3><span>113</span></div>
+            <div class="group-card" style="background:#2ecc71"><h3>No HIV – No Pain</h3><span>82</span></div>
+        </div>
+        <div class="stat-row">
+            <div class="stat-box"><strong>391</strong>Total Patients</div>
+            <div class="stat-box"><strong>30</strong>Rows Removed</div>
+            <div class="stat-box"><strong>~80</strong>Variables</div>
+            <div class="stat-box"><strong>2</strong>Papers</div>
+            <div class="stat-box"><strong>40+</strong>Figures</div>
+        </div>
+        <div class="rationale">
+            This dashboard presents all analyses for two planned manuscripts.
+            <b>Paper 1</b> characterises the HIV–chronic pain phenotype: demographics, pain distribution,
+            pain locations, and adjusted logistic regression.
+            <b>Paper 2</b> examines clinical correlates: comorbidities, ART regimens, psychiatric burden,
+            smoking, sleep, polypharmacy, and advanced multivariate analyses.
+            The <b>Correlations</b> tab contains the original 12 exploratory analyses.
+            Statistical tests: Point-Biserial r, Spearman r, Chi-Square, and Logistic Regression.
+        </div>
+        <div class="legend">
+            <div class="legend-item"><div class="dot" style="background:#e74c3c"></div>HIV – Pain</div>
+            <div class="legend-item"><div class="dot" style="background:#e67e22"></div>HIV – No Pain</div>
+            <div class="legend-item"><div class="dot" style="background:#3498db"></div>No HIV – Pain</div>
+            <div class="legend-item"><div class="dot" style="background:#2ecc71"></div>No HIV – No Pain</div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════ PAPER 1 ══════════════ -->
+<div id="paper1" class="paper-section">
+
+    <div id="p1_f01" class="fig-section active">
         <div class="card">
-            <h2>Study Overview</h2>
-            <p class="subtitle">HIV Pain Study · Cleaned Dataset Summary</p>
-            <div class="overview-grid">
-                <div class="group-card" style="background:#e74c3c">
-                    <h3>HIV – Pain</h3><span>149</span>
-                </div>
-                <div class="group-card" style="background:#e67e22">
-                    <h3>HIV – No Pain</h3><span>47</span>
-                </div>
-                <div class="group-card" style="background:#3498db">
-                    <h3>No HIV – Pain</h3><span>113</span>
-                </div>
-                <div class="group-card" style="background:#2ecc71">
-                    <h3>No HIV – No Pain</h3><span>82</span>
-                </div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-box"><strong>391</strong>Total Patients</div>
-                <div class="stat-box"><strong>30</strong>Rows Removed</div>
-                <div class="stat-box"><strong>80</strong>Variables</div>
-                <div class="stat-box"><strong>12</strong>Correlations</div>
-            </div>
+            <h2>Figure 1 <span class="badge badge-p1">P1</span> · CONSORT Study Flow Diagram</h2>
+            <p class="subtitle">Recruitment, exclusion, and group allocation</p>
             <div class="rationale">
-                This dashboard presents correlation analyses from a phone-collected HIV patient dataset.
-                Patients are classified into four groups based on HIV status and presence of chronic pain.
-                All correlations are examined within and across these groups to determine whether
-                relationships are driven by HIV, pain, or their interaction.
-                Statistical tests used: Point-Biserial r (binary vs continuous),
-                Spearman r (ordinal vs continuous), and Chi-Square (binary vs binary).
-                A p-value below 0.05 is considered statistically significant.
+                A CONSORT-style flow diagram is required by most biomedical journals to document
+                the patient flow from recruitment to final inclusion. It shows how 421 patients
+                were screened, 30 excluded for missingness, and 391 allocated to four groups.
             </div>
-            <div class="legend">
-                <div class="legend-item"><div class="dot" style="background:#e74c3c"></div>HIV – Pain</div>
-                <div class="legend-item"><div class="dot" style="background:#e67e22"></div>HIV – No Pain</div>
-                <div class="legend-item"><div class="dot" style="background:#3498db"></div>No HIV – Pain</div>
-                <div class="legend-item"><div class="dot" style="background:#2ecc71"></div>No HIV – No Pain</div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_01_consort_flow.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f02a" class="fig-section">
+        <div class="card">
+            <h2>Figure 2A <span class="badge badge-p1">P1</span> · Sex Distribution by Group</h2>
+            <p class="subtitle">Stacked bar — % Male / Female per group</p>
+            <div class="rationale">
+                Sex distribution is a standard Table 1 characteristic and is best visualised
+                as a stacked bar to show proportions within each group simultaneously.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_02a_sex_by_group.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f02b" class="fig-section">
+        <div class="card">
+            <h2>Figure 2B <span class="badge badge-p1">P1</span> · Ethnicity / Race Distribution</h2>
+            <p class="subtitle">Grouped bar — % of each ethnicity per group</p>
+            <div class="rationale">
+                Race and ethnicity influence pain experience, health-seeking behaviour, and HIV
+                outcomes. Documenting their distribution validates generalisability.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_02b_ethnicity_by_group.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f02c" class="fig-section">
+        <div class="card">
+            <h2>Figure 2C <span class="badge badge-p1">P1</span> · Age Distribution — Violin</h2>
+            <p class="subtitle">Violin + boxplot — age spread within each group</p>
+            <div class="rationale">
+                Violin plots reveal the full distribution shape, medians, and outliers better than
+                means alone, fulfilling the recommendation to move beyond summary statistics.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_02c_age_violin.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f02d" class="fig-section">
+        <div class="card">
+            <h2>Figure 2D <span class="badge badge-p1">P1</span> · Weight Distribution — Violin</h2>
+            <p class="subtitle">Violin + boxplot — weight spread within each group</p>
+            <div class="rationale">
+                Weight is a key metabolic covariate in HIV/pain studies. Its distribution often
+                differs markedly between HIV and non-HIV groups due to ART-related lipodystrophy.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_02d_weight_violin.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f02e" class="fig-section">
+        <div class="card">
+            <h2>Figure 2E <span class="badge badge-p1">P1</span> · Age Histograms by Group</h2>
+            <p class="subtitle">Faceted histograms — one panel per group</p>
+            <div class="rationale">
+                Faceted histograms allow direct comparison of age shapes across groups, revealing
+                whether certain groups are skewed toward older or younger patients.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_02e_age_histogram.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f03" class="fig-section">
+        <div class="card">
+            <h2>Figure 3 <span class="badge badge-p1">P1</span> · Pain Severity Distribution</h2>
+            <p class="subtitle">Violin · Histogram · Stacked proportions</p>
+            <div class="rationale">
+                Showing the full distribution of pain ratings (not just means) is essential for
+                publication. The three panels cover violin shape, raw counts, and proportional
+                comparisons across groups.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_03a_pain_severity_violin.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+            <div class="graph-scroll std" style="margin-top:16px">
+                <iframe src="graphs/p1_03b_pain_severity_histogram.html"></iframe>
+            </div>
+            <div class="graph-scroll std" style="margin-top:16px">
+                <iframe src="graphs/p1_03c_pain_severity_stacked.html"></iframe>
             </div>
         </div>
     </div>
 
-    <!-- CORRELATION 1 -->
-    <div id="corr1" class="section">
+    <div id="p1_f04" class="fig-section">
         <div class="card">
-            <h2>Correlation 1: Pain Severity vs Mental Health Conditions</h2>
+            <h2>Figure 4 <span class="badge badge-p1">P1</span> · Chronic Pain Prevalence</h2>
+            <p class="subtitle">Grouped bar — Pain &gt;3 months and Pain &gt;12 hrs/day by group</p>
+            <div class="rationale">
+                These two clinical thresholds define chronic pain and help distinguish acute from
+                chronic pain phenotypes. Their prevalence across groups anchors the paper's
+                primary exposure definition.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_04_chronic_pain_prevalence.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f05" class="fig-section">
+        <div class="card">
+            <h2>Figure 5 <span class="badge badge-p1">P1</span> · Pain Location Heatmap</h2>
+            <p class="subtitle">Heatmap — body region prevalence (%) by group</p>
+            <div class="rationale">
+                A heatmap of pain locations reveals which body regions are most affected in each
+                group and whether HIV patients show a distinctive anatomical pain pattern (e.g.
+                higher foot/ankle pain from neuropathy).
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_05_pain_location_heatmap.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f06" class="fig-section">
+        <div class="card">
+            <h2>Figure 6 <span class="badge badge-p1">P1</span> · Pain Location Frequencies</h2>
+            <p class="subtitle">Horizontal bar — overall prevalence by body region</p>
+            <div class="rationale">
+                A horizontal bar chart ranked by prevalence quickly communicates which pain
+                locations are most common in this cohort overall, useful for the clinical
+                characterisation section of Paper 1.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_06_pain_location_frequencies.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f07" class="fig-section">
+        <div class="card">
+            <h2>Figure 7 <span class="badge badge-p1">P1</span> · Number of Painful Regions</h2>
+            <p class="subtitle">Histogram — count of painful regions per patient by group</p>
+            <div class="rationale">
+                Widespread pain (affecting many regions) is a marker of central sensitisation.
+                Comparing the histogram of region counts between HIV and non-HIV groups tests
+                whether HIV is associated with more diffuse pain.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_07_pain_region_count_histogram.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f08" class="fig-section">
+        <div class="card">
+            <h2>Figure 8 <span class="badge badge-p1">P1</span> · Pain Severity vs Number of Pain Regions</h2>
+            <p class="subtitle">Scatter with OLS trend lines — do more regions mean higher severity?</p>
+            <div class="rationale">
+                A positive correlation between number of regions and pain severity would support
+                a central sensitisation or widespread pain phenotype, which has different
+                treatment implications than localised nociceptive pain.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p1_08_pain_severity_vs_regions.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p1_f09" class="fig-section">
+        <div class="card">
+            <h2>Figure 9/10 <span class="badge badge-p1">P1</span> · Adjusted Logistic Regression — Forest Plot</h2>
+            <p class="subtitle">ORs with 95% CI — predictors of chronic pain</p>
+            <div class="rationale">
+                A forest plot of adjusted odds ratios is the standard way to present multivariable
+                logistic regression in biomedical journals. Red dots indicate predictors significant
+                at p&lt;0.05. The vertical dashed line at OR=1 is the null.
+            </div>
+            <div class="graph-scroll" style="--graph-h: 560px">
+                <iframe src="graphs/p1_09_logistic_regression_forest.html"></iframe>
+            </div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+</div><!-- /paper1 -->
+
+<!-- ══════════════ PAPER 2 ══════════════ -->
+<div id="paper2" class="paper-section">
+
+    <div id="p2_f02" class="fig-section active">
+        <div class="card">
+            <h2>Figure 2 <span class="badge badge-p2">P2</span> · Comorbidity Burden</h2>
+            <p class="subtitle">Bar chart — mean number of conditions (± SEM) by group</p>
+            <div class="rationale">
+                Mean comorbidity count with error bars quantifies disease burden per group and
+                provides the first test of whether HIV, pain, or their interaction drives
+                higher total disease load.
+            </div>
+            <div class="graph-scroll sm"><iframe src="graphs/p2_02_comorbidity_burden.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f03" class="fig-section">
+        <div class="card">
+            <h2>Figure 3 <span class="badge badge-p2">P2</span> · Comorbidity Prevalence Heatmap</h2>
+            <p class="subtitle">Heatmap — % prevalence of 10 conditions × 4 groups</p>
+            <div class="rationale">
+                A heatmap provides a compact, publication-ready overview of how all major
+                comorbidities vary across the four groups simultaneously, enabling readers to
+                immediately identify which conditions track with HIV vs pain status.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_03_comorbidity_heatmap.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f04" class="fig-section">
+        <div class="card">
+            <h2>Figure 4 <span class="badge badge-p2">P2</span> · Neurological Disorders</h2>
+            <p class="subtitle">Stacked bar — Stroke, Seizure, Neurological Disease, Peripheral Neuropathy</p>
+            <div class="rationale">
+                Neurological comorbidities are mechanistically linked to both HIV (neuroinvasion,
+                ART toxicity) and chronic pain (central/peripheral sensitisation). Stacking them
+                shows total neurological burden and its composition.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_04_neurological_disorders.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f05" class="fig-section">
+        <div class="card">
+            <h2>Figure 5 <span class="badge badge-p2">P2</span> · Psychiatric Disorders</h2>
+            <p class="subtitle">Grouped bar — Depression, Anxiety, Bipolar, Other MH</p>
+            <div class="rationale">
+                Psychiatric burden is one of the strongest correlates of chronic pain and ART
+                non-adherence in HIV populations. Grouped bars allow comparison of each disorder
+                separately across all four groups.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_05_psychiatric_disorders.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f06" class="fig-section">
+        <div class="card">
+            <h2>Figure 6 <span class="badge badge-p2">P2</span> · Metabolic Disorders</h2>
+            <p class="subtitle">Grouped bar — Diabetes, Hypertension, Heart Disease, Kidney Disease</p>
+            <div class="rationale">
+                HIV and certain ART regimens accelerate metabolic syndrome. Comparing metabolic
+                disorder prevalence across groups separates HIV-driven from pain-driven metabolic
+                burden.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_06_metabolic_disorders.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f07" class="fig-section">
+        <div class="card">
+            <h2>Figure 7 <span class="badge badge-p2">P2</span> · ART Drug Classes</h2>
+            <p class="subtitle">Pie chart + grouped bar — NRTI, INSTI, NNRTI, PI (HIV patients only)</p>
+            <div class="rationale">
+                The distribution of ART drug classes describes the pharmacological landscape of
+                the HIV cohort and sets up the ART–neuropathy analysis in Figure 8.
+            </div>
+            <div class="graph-scroll sm"><iframe src="graphs/p2_07a_art_drug_classes_pie.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+            <div class="graph-scroll sm" style="margin-top:16px">
+                <iframe src="graphs/p2_07b_art_drug_classes_bar.html"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div id="p2_f09" class="fig-section">
+        <div class="card">
+            <h2>Figure 9 <span class="badge badge-p2">P2</span> · ART Adherence — Histogram</h2>
+            <p class="subtitle">Histogram — missed ART doses distribution (HIV patients only)</p>
+            <div class="rationale">
+                The distribution of missed doses reveals whether non-adherence is concentrated
+                among a few patients or broadly distributed — important for understanding whether
+                the ART–pain association is driven by a minority of highly non-adherent patients.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_09_art_adherence_histogram.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f11" class="fig-section">
+        <div class="card">
+            <h2>Figure 11 <span class="badge badge-p2">P2</span> · Smoking by Group</h2>
+            <p class="subtitle">Grouped bar — cigarette and e-cigarette prevalence (%) by group</p>
+            <div class="rationale">
+                Smoking rates in HIV populations often exceed the general population. Documenting
+                both cigarette and e-cigarette use separately is important because their
+                relationships with pain and inflammation differ.
+            </div>
+            <div class="graph-scroll sm"><iframe src="graphs/p2_11_smoking_by_group.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f12" class="fig-section">
+        <div class="card">
+            <h2>Figure 12 <span class="badge badge-p2">P2</span> · Smoking vs Pain — Boxplot</h2>
+            <p class="subtitle">Boxplot — pain rating by smoking status and group</p>
+            <div class="rationale">
+                A boxplot stratified by smoking status and group tests whether smokers report
+                higher pain, and whether this relationship is amplified in HIV-positive patients.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_12_smoking_vs_pain_boxplot.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f13" class="fig-section">
+        <div class="card">
+            <h2>Figure 13 <span class="badge badge-p2">P2</span> · Sleep Disorder Prevalence</h2>
+            <p class="subtitle">Bar — % with sleep disorder by group</p>
+            <div class="rationale">
+                Sleep disorders are highly prevalent in both HIV and chronic pain populations and
+                worsen quality of life independently. Documenting prevalence by group sets up the
+                sleep–pain analysis in Figure 14.
+            </div>
+            <div class="graph-scroll sm"><iframe src="graphs/p2_13_sleep_prevalence.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f14" class="fig-section">
+        <div class="card">
+            <h2>Figure 14 <span class="badge badge-p2">P2</span> · Sleep Disorder vs Pain — Violin</h2>
+            <p class="subtitle">Violin — pain rating by sleep disorder status and group</p>
+            <div class="rationale">
+                Violin plots reveal the full distribution of pain severity in patients with vs
+                without sleep disorders, showing whether the effect is concentrated at the
+                high end of the pain scale.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_14_sleep_vs_pain_violin.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f15" class="fig-section">
+        <div class="card">
+            <h2>Figure 15 <span class="badge badge-p2">P2</span> · Polypharmacy Distribution</h2>
+            <p class="subtitle">Histogram — medication class count per patient by group</p>
+            <div class="rationale">
+                Polypharmacy (&ge;5 drug classes) is a patient safety concern and a marker of
+                disease complexity. This histogram shows its prevalence and distribution across
+                groups.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_15_polypharmacy_histogram.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f16" class="fig-section">
+        <div class="card">
+            <h2>Figure 16 <span class="badge badge-p2">P2</span> · Medication Classes — Stacked Bar</h2>
+            <p class="subtitle">Stacked bar — % of each medication class per group</p>
+            <div class="rationale">
+                A stacked bar of medication classes shows which drug categories dominate each
+                group's pharmacotherapy, revealing whether pain, cardiovascular, or psychiatric
+                drugs are disproportionately used in HIV–Pain patients.
+            </div>
+            <div class="graph-scroll tall"><iframe src="graphs/p2_16_medication_classes_stacked.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f17" class="fig-section">
+        <div class="card">
+            <h2>Figure 17 <span class="badge badge-p2">P2</span> · Polypharmacy vs Hospitalization</h2>
+            <p class="subtitle">Boxplot — medication count by hospitalization status and group</p>
+            <div class="rationale">
+                Hospitalized patients typically carry a higher medication burden. This boxplot
+                tests that relationship across groups and identifies whether the association
+                is driven primarily by HIV or pain status.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_17_polypharmacy_vs_hospitalization.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f18" class="fig-section">
+        <div class="card">
+            <h2>Figure 18 <span class="badge badge-p2">P2</span> · Polypharmacy vs Pain</h2>
+            <p class="subtitle">Scatter — medication count vs pain severity with OLS trend</p>
+            <div class="rationale">
+                A positive association would suggest that higher pharmacological load correlates
+                with greater pain burden — either because more drugs are prescribed for pain, or
+                because multimorbidity drives both.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_18_polypharmacy_vs_pain.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f21" class="fig-section">
+        <div class="card">
+            <h2>Figure 21 <span class="badge badge-p2">P2</span> · Age vs Medication Count</h2>
+            <p class="subtitle">Scatter — age vs number of medication classes with OLS trend</p>
+            <div class="rationale">
+                Age-related polypharmacy is expected; a steeper slope in HIV groups would
+                support the accelerated aging hypothesis — older HIV patients accumulating
+                medications faster than non-HIV peers.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_21_age_vs_medication_count.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f22" class="fig-section">
+        <div class="card">
+            <h2>Figure 22 <span class="badge badge-p2">P2</span> · Weight vs Pain</h2>
+            <p class="subtitle">Scatter — weight vs pain severity with OLS trend by group</p>
+            <div class="rationale">
+                Obesity-associated inflammation may amplify pain. A positive weight–pain
+                correlation across groups would support targeting weight management as a
+                pain reduction strategy.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_22_weight_vs_pain.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f23" class="fig-section">
+        <div class="card">
+            <h2>Figure 23 <span class="badge badge-p2">P2</span> · Weight vs Diabetes</h2>
+            <p class="subtitle">Boxplot — weight by diabetes status and group</p>
+            <div class="rationale">
+                Higher weight in diabetic patients is expected; this boxplot tests whether
+                this metabolic relationship holds consistently across all four groups or
+                is disrupted by HIV-related wasting.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_23_weight_vs_diabetes.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f24" class="fig-section">
+        <div class="card">
+            <h2>Figure 24 <span class="badge badge-p2">P2</span> · Weight vs Hypertension</h2>
+            <p class="subtitle">Boxplot — weight by hypertension status and group</p>
+            <div class="rationale">
+                Hypertensive patients typically have higher BMI. This figure tests whether
+                the weight–hypertension relationship is consistent across groups and whether
+                HIV modifies it.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_24_weight_vs_hypertension.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f25" class="fig-section">
+        <div class="card">
+            <h2>Figure 25 <span class="badge badge-p2">P2</span> · Hospitalization Rate by Group</h2>
+            <p class="subtitle">Bar — % hospitalized in past year by group</p>
+            <div class="rationale">
+                Hospitalization rate is a clinically meaningful health-utilisation outcome.
+                Comparing rates across the four groups quantifies the burden of HIV + pain
+                on healthcare use.
+            </div>
+            <div class="graph-scroll sm"><iframe src="graphs/p2_25_hospitalization_by_group.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="p2_f27" class="fig-section">
+        <div class="card">
+            <h2>Figure 27 <span class="badge badge-p2">P2</span> · Spearman Correlation Matrix</h2>
+            <p class="subtitle">Heatmap — Age, Weight, Pain, Med Count, Comorbidity, ART Missed</p>
+            <div class="rationale">
+                A correlation matrix provides a compact view of pairwise relationships among all
+                continuous variables, identifying multicollinearity before regression and
+                highlighting the strongest predictors for the multivariable model.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/p2_27_correlation_matrix.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+</div><!-- /paper2 -->
+
+<!-- ══════════════ CORRELATIONS 1–12 ══════════════ -->
+<div id="corrns" class="paper-section">
+
+    <div id="c_f01" class="fig-section active">
+        <div class="card">
+            <h2>Correlation 1 · Pain Severity vs Mental Health</h2>
             <p class="subtitle">Point-Biserial r · Higher pain rating vs presence of mental health condition</p>
             <div class="rationale">
-                Chronic pain and mood disorders are bidirectionally linked — pain increases psychological
-                distress, and mental health conditions lower pain tolerance and coping ability.
-                This analysis tests whether higher bodily pain ratings correlate with current depression,
-                anxiety, bipolar disorder, or other mental health conditions, broken down by group.
-                If the correlation is strong in both pain groups but weak in No HIV-No Pain,
-                it suggests the relationship is driven by pain rather than HIV status.
+                Chronic pain and mood disorders are bidirectionally linked. This analysis tests
+                whether higher bodily pain ratings correlate with current depression, anxiety,
+                bipolar, or other MH conditions, broken down by group.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/01_pain_vs_mental_health.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/01_pain_vs_mental_health.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 2 -->
-    <div id="corr2" class="section">
+    <div id="c_f02" class="fig-section">
         <div class="card">
-            <h2>Correlation 2: Chronic Pain Duration vs Mental Health</h2>
-            <p class="subtitle">Point-Biserial r · Pain lasting 3+ months or 12+ hrs/day vs mental health flags</p>
+            <h2>Correlation 2 · Chronic Pain Duration vs Mental Health</h2>
+            <p class="subtitle">Point-Biserial r · Pain &gt;3 months or &gt;12 hrs/day vs MH flags</p>
             <div class="rationale">
-                Pain that persists beyond 3 months is classified as chronic and has a well-documented
-                association with depression and anxiety. This analysis extends Correlation 1 by examining
-                whether the duration of pain — not just its severity — predicts mental health burden.
-                Patients reporting pain for over 3 months or 12+ hours daily are compared against
-                mental health condition flags across all four groups.
+                Duration of pain — not just severity — predicts mental health burden.
+                Patients reporting pain for over 3 months or 12+ hours daily are compared
+                against mental health condition flags across all four groups.
             </div>
-            <div class="graph-scroll tall">
-                <iframe src="graphs/02_chronic_pain_vs_mental_health.html"></iframe>
-            </div>
+            <div class="graph-scroll tall"><iframe src="graphs/02_chronic_pain_vs_mental_health.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 3 -->
-    <div id="corr3" class="section">
+    <div id="c_f03" class="fig-section">
         <div class="card">
-            <h2>Correlation 3: ART Adherence vs Pain</h2>
-            <p class="subtitle">Spearman r · Missed ART doses vs pain severity and duration (HIV patients only)</p>
+            <h2>Correlation 3 · ART Adherence vs Pain</h2>
+            <p class="subtitle">Spearman r · Missed ART doses vs pain severity and duration (HIV only)</p>
             <div class="rationale">
-                Poor ART adherence in HIV patients can result in suboptimal viral suppression,
-                which drives systemic inflammation and neuropathic pain. Conversely, patients
-                experiencing high pain levels may struggle to maintain consistent medication routines.
-                This bidirectional relationship is tested here using Spearman correlation between
-                missed doses and pain rating, and point-biserial correlation between missed doses
-                and chronic pain flags. Only HIV-positive patients are included.
+                Poor ART adherence can drive systemic inflammation and neuropathic pain.
+                Conversely, patients experiencing high pain may struggle to maintain their
+                medication routines. Only HIV-positive patients are included.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/03_art_adherence_vs_pain.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/03_art_adherence_vs_pain.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 4 -->
-    <div id="corr4" class="section">
+    <div id="c_f04" class="fig-section">
         <div class="card">
-            <h2>Correlation 4: ART Drug Class vs Peripheral Neuropathy</h2>
-            <p class="subtitle">Chi-Square · Drug class presence vs peripheral neuropathy diagnosis</p>
+            <h2>Correlation 4 · ART Drug Class vs Peripheral Neuropathy</h2>
+            <p class="subtitle">Chi-Square · Drug class vs peripheral neuropathy diagnosis</p>
             <div class="rationale">
-                Certain ART drug classes — particularly older NRTIs — are known to cause peripheral
-                neuropathy as a side effect through mitochondrial toxicity. This analysis uses
-                chi-square tests to check whether patients on each drug class show significantly
-                higher rates of peripheral neuropathy, providing a real-world pharmacovigilance
-                signal from this dataset.
+                Older NRTIs are known to cause peripheral neuropathy via mitochondrial toxicity.
+                This analysis provides a pharmacovigilance signal from this real-world dataset.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/04_art_class_vs_neuropathy.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/04_art_class_vs_neuropathy.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 5 -->
-    <div id="corr5" class="section">
+    <div id="c_f05" class="fig-section">
         <div class="card">
-            <h2>Correlation 5: Metabolic Comorbidity Clustering</h2>
-            <p class="subtitle">Chi-Square &amp; Point-Biserial r · Weight, diabetes, HBP, heart disease, kidney disease</p>
+            <h2>Correlation 5 · Metabolic Comorbidity Clustering</h2>
+            <p class="subtitle">Chi-Square &amp; Point-Biserial r · Weight, diabetes, HBP, heart, kidney</p>
             <div class="rationale">
-                Metabolic syndrome — the co-occurrence of obesity, hypertension, diabetes, and
-                cardiovascular disease — is a well-established clinical cluster. HIV itself and
-                certain ART regimens can accelerate metabolic dysfunction.
-                This analysis tests whether these conditions co-occur at higher rates in HIV
-                groups compared to non-HIV groups.
+                Metabolic syndrome — obesity, hypertension, diabetes, cardiovascular disease —
+                is accelerated in HIV patients. This tests whether these conditions co-occur
+                at higher rates in HIV groups.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/05_metabolic_clustering.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/05_metabolic_clustering.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 6 -->
-    <div id="corr6" class="section">
+    <div id="c_f06" class="fig-section">
         <div class="card">
-            <h2>Correlation 6: Age vs Total Comorbidity Burden</h2>
+            <h2>Correlation 6 · Age vs Comorbidity Burden</h2>
             <p class="subtitle">Spearman r · Age vs count of current conditions</p>
             <div class="rationale">
-                Older age naturally accumulates more chronic conditions. However, HIV-positive
-                patients often show accelerated aging — accumulating comorbidities at younger ages
-                than HIV-negative peers due to chronic immune activation and long-term ART exposure.
-                If HIV groups show a steeper age-comorbidity slope, that supports the accelerated
-                aging hypothesis in this sample.
+                HIV patients often show accelerated aging — accumulating comorbidities at younger
+                ages than HIV-negative peers. A steeper age–comorbidity slope in HIV groups
+                supports the accelerated aging hypothesis.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/06_age_vs_comorbidity.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/06_age_vs_comorbidity.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 7 -->
-    <div id="corr7" class="section">
+    <div id="c_f07" class="fig-section">
         <div class="card">
-            <h2>Correlation 7: Age vs Pain Severity</h2>
+            <h2>Correlation 7 · Age vs Pain Severity</h2>
             <p class="subtitle">Spearman r · Age vs bodily pain rating across groups</p>
             <div class="rationale">
-                Pain prevalence and severity generally increase with age due to degenerative
-                joint changes and accumulating conditions. In HIV patients, neuropathic pain
-                from long-term infection and ART exposure may amplify this relationship.
-                This scatter plot with trend lines shows whether older patients report higher
-                pain, and whether this trend differs between HIV and non-HIV groups.
+                Pain prevalence and severity generally increase with age. In HIV patients,
+                neuropathic pain from long-term infection and ART may amplify this relationship.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/07_age_vs_pain.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/07_age_vs_pain.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 8 -->
-    <div id="corr8" class="section">
+    <div id="c_f08" class="fig-section">
         <div class="card">
-            <h2>Correlation 8: Smoking vs Pain Severity</h2>
+            <h2>Correlation 8 · Smoking vs Pain Severity</h2>
             <p class="subtitle">Point-Biserial r · Cigarette &amp; e-cigarette use vs pain rating</p>
             <div class="rationale">
                 Smoking is associated with heightened pain sensitivity through nicotine-driven
-                neurological changes and increased systemic inflammation. Smokers report higher
-                pain intensity and are more likely to develop chronic pain conditions.
-                This analysis tests whether current cigarette or e-cigarette use correlates
-                with higher pain ratings, broken down by group.
+                neurological changes and systemic inflammation. This tests whether current
+                smokers report higher pain, broken down by group.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/08_smoking_vs_pain.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/08_smoking_vs_pain.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 9 -->
-    <div id="corr9" class="section">
+    <div id="c_f09" class="fig-section">
         <div class="card">
-            <h2>Correlation 9: Sleep Condition vs Pain &amp; Mental Health</h2>
-            <p class="subtitle">Point-Biserial r · Sleep disorder vs pain severity and mental health flags</p>
+            <h2>Correlation 9 · Sleep Condition vs Pain &amp; Mental Health</h2>
+            <p class="subtitle">Point-Biserial r · Sleep disorder vs pain severity and MH flags</p>
             <div class="rationale">
-                Sleep disruption and chronic pain form a well-documented bidirectional cycle —
-                pain interrupts sleep, and poor sleep lowers pain thresholds and increases
-                emotional reactivity, worsening mood disorders. This analysis tests whether
-                patients with a current sleep condition report higher pain and greater rates
-                of depression and anxiety across all groups.
+                Sleep disruption and chronic pain form a well-documented bidirectional cycle.
+                This tests whether patients with current sleep conditions report higher pain
+                and greater rates of depression and anxiety.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/09_sleep_vs_pain_mentalhealth.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/09_sleep_vs_pain_mentalhealth.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 10 -->
-    <div id="corr10" class="section">
+    <div id="c_f10" class="fig-section">
         <div class="card">
-            <h2>Correlation 10: Polypharmacy vs Pain &amp; Hospitalization</h2>
-            <p class="subtitle">Spearman r &amp; Box Plot · Number of medication classes vs outcomes</p>
+            <h2>Correlation 10 · Polypharmacy vs Pain &amp; Hospitalization</h2>
+            <p class="subtitle">Spearman r &amp; Box Plot · Medication classes vs outcomes</p>
             <div class="rationale">
-                Polypharmacy — being on multiple medication classes simultaneously — is both
-                a marker of disease burden and an independent risk factor for adverse outcomes.
-                This analysis tests whether medication count correlates with higher pain scores
-                and whether hospitalized patients are on significantly more medication classes.
+                Polypharmacy is both a marker of disease burden and an independent risk factor
+                for adverse outcomes. This tests whether medication count correlates with higher
+                pain scores and whether hospitalized patients are on more medication classes.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/10a_polypharmacy_vs_pain.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/10a_polypharmacy_vs_pain.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
             <div class="graph-scroll std" style="margin-top:16px">
                 <iframe src="graphs/10b_polypharmacy_vs_hospitalization.html"></iframe>
             </div>
+        </div>
+    </div>
+
+    <div id="c_f11" class="fig-section">
+        <div class="card">
+            <h2>Correlation 11 · Lower Limb Pain vs Peripheral Neuropathy</h2>
+            <p class="subtitle">Chi-Square · Feet/ankle and thigh/knee/leg pain vs neuropathy</p>
+            <div class="rationale">
+                Peripheral neuropathy typically manifests as tingling or pain in the extremities.
+                If patients reporting foot/ankle or leg pain show significantly higher neuropathy
+                diagnosis rates, it validates the clinical plausibility of the dataset.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/11_pain_region_vs_neuropathy.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 11 -->
-    <div id="corr11" class="section">
+    <div id="c_f12" class="fig-section">
         <div class="card">
-            <h2>Correlation 11: Lower Limb Pain Region vs Peripheral Neuropathy</h2>
-            <p class="subtitle">Chi-Square · Feet/ankle and thigh/knee/leg pain vs neuropathy diagnosis</p>
+            <h2>Correlation 12 · Comorbidity Prevalence — All Groups</h2>
+            <p class="subtitle">Grouped bar — % of 10 key conditions by group</p>
             <div class="rationale">
-                Peripheral neuropathy typically manifests as tingling, burning, or pain in the
-                extremities — particularly the feet and lower legs. If patients reporting foot/ankle
-                or leg pain are significantly more likely to also have a peripheral neuropathy
-                diagnosis, this serves as an internal consistency check and a clinically meaningful
-                signal, especially in HIV-Pain patients.
+                This overview compares prevalence of 10 key conditions across all four groups,
+                revealing which conditions are driven by HIV, by pain, or by both.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/11_pain_region_vs_neuropathy.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/12_comorbidity_prevalence_by_group.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
 
-    <!-- CORRELATION 12 -->
-    <div id="corr12" class="section">
+</div><!-- /corrns -->
+
+<!-- ══════════════ AGE / SEX / RACE ══════════════ -->
+<div id="agesex" class="paper-section">
+
+    <div id="as_f01" class="fig-section active">
         <div class="card">
-            <h2>Correlation 12: Comorbidity Prevalence Across All Four Groups</h2>
-            <p class="subtitle">Grouped bar chart · Prevalence (%) of 10 key conditions by group</p>
+            <h2>Age Categories — Stacked Bar</h2>
+            <p class="subtitle">Distribution of 18–29 · 30–39 · 40–49 · 50–59 · 60+ by group</p>
             <div class="rationale">
-                This overview chart shows the percentage of patients in each group currently
-                living with 10 key conditions: hypertension, heart disease, diabetes, cancer,
-                kidney disease, sleep disorders, depression, anxiety, peripheral neuropathy,
-                and stroke. Comparing prevalence across all four groups reveals which conditions
-                are driven by HIV, which by pain, and which by both.
+                Age category distributions reveal whether groups are demographically comparable
+                or whether HIV groups skew older — which would confound all downstream analyses
+                and must be addressed by adjustment.
             </div>
-            <div class="graph-scroll std">
-                <iframe src="graphs/12_comorbidity_prevalence_by_group.html"></iframe>
-            </div>
+            <div class="graph-scroll std"><iframe src="graphs/age_01_age_categories_stacked.html"></iframe></div>
             <p class="scroll-hint">← Swipe to explore →</p>
         </div>
     </div>
+
+    <div id="as_f02" class="fig-section">
+        <div class="card">
+            <h2>Pain Prevalence by Age Category</h2>
+            <p class="subtitle">Line chart — % with pain across age bands</p>
+            <div class="rationale">
+                A line chart across age categories shows whether pain prevalence increases
+                monotonically with age or peaks in middle-aged patients — a pattern commonly
+                seen in HIV cohorts due to long-term ART exposure.
+            </div>
+            <div class="graph-scroll sm"><iframe src="graphs/age_02_pain_prevalence_by_age.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="as_f03" class="fig-section">
+        <div class="card">
+            <h2>Comorbidity Count by Age Category</h2>
+            <p class="subtitle">Bar — mean comorbidities per age band</p>
+            <div class="rationale">
+                This chart tests the accelerated aging hypothesis: if HIV patients accumulate
+                comorbidities faster with age, the bar chart should rise more steeply in HIV
+                age bands than in non-HIV bands.
+            </div>
+            <div class="graph-scroll sm"><iframe src="graphs/age_03_comorbidity_by_age.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="as_f04" class="fig-section">
+        <div class="card">
+            <h2>Pain Prevalence by Sex</h2>
+            <p class="subtitle">Bar — % with pain by sex</p>
+            <div class="rationale">
+                Sex is a well-established modifier of pain experience. Women generally report
+                higher pain severity and prevalence. This figure tests whether that pattern
+                holds in this cohort.
+            </div>
+            <div class="graph-scroll sm"><iframe src="graphs/sex_01_pain_prevalence_by_sex.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="as_f05" class="fig-section">
+        <div class="card">
+            <h2>Pain Severity by Sex</h2>
+            <p class="subtitle">Violin — pain rating distribution by sex</p>
+            <div class="rationale">
+                A violin plot reveals not just mean differences in pain severity between
+                sexes, but whether females show a higher proportion of patients at the
+                upper end of the pain scale.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/sex_02_pain_severity_by_sex.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+    <div id="as_f06" class="fig-section">
+        <div class="card">
+            <h2>Comorbidity Count by Sex</h2>
+            <p class="subtitle">Boxplot — comorbidity count distribution by sex</p>
+            <div class="rationale">
+                Sex-based differences in comorbidity burden may confound the HIV–pain
+                relationship. This boxplot provides the foundation for sex-stratified
+                sensitivity analyses.
+            </div>
+            <div class="graph-scroll std"><iframe src="graphs/sex_03_comorbidity_by_sex.html"></iframe></div>
+            <p class="scroll-hint">← Swipe to explore →</p>
+        </div>
+    </div>
+
+</div><!-- /agesex -->
 
 </main>
 
@@ -524,14 +952,119 @@
 </footer>
 
 <script>
-    function show(id, btn) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
-        window.scrollTo(0, 0);
-    }
-</script>
+// ── Paper-level tab switching ──────────────────────────────────────────────
+const FIG_TABS = {
+    overview: [],
+    paper1: [
+        { id: 'p1_f01',  label: 'Fig 1 · CONSORT' },
+        { id: 'p1_f02a', label: 'Fig 2A · Sex' },
+        { id: 'p1_f02b', label: 'Fig 2B · Ethnicity' },
+        { id: 'p1_f02c', label: 'Fig 2C · Age Violin' },
+        { id: 'p1_f02d', label: 'Fig 2D · Weight' },
+        { id: 'p1_f02e', label: 'Fig 2E · Age Hist' },
+        { id: 'p1_f03',  label: 'Fig 3 · Pain Severity' },
+        { id: 'p1_f04',  label: 'Fig 4 · Chronic Pain' },
+        { id: 'p1_f05',  label: 'Fig 5 · Pain Heatmap' },
+        { id: 'p1_f06',  label: 'Fig 6 · Pain Freq' },
+        { id: 'p1_f07',  label: 'Fig 7 · Regions Hist' },
+        { id: 'p1_f08',  label: 'Fig 8 · Sev vs Region' },
+        { id: 'p1_f09',  label: 'Fig 9/10 · Forest Plot' },
+    ],
+    paper2: [
+        { id: 'p2_f02',  label: 'Fig 2 · Burden' },
+        { id: 'p2_f03',  label: 'Fig 3 · Heatmap' },
+        { id: 'p2_f04',  label: 'Fig 4 · Neuro' },
+        { id: 'p2_f05',  label: 'Fig 5 · Psych' },
+        { id: 'p2_f06',  label: 'Fig 6 · Metabolic' },
+        { id: 'p2_f07',  label: 'Fig 7 · ART Classes' },
+        { id: 'p2_f09',  label: 'Fig 9 · ART Adherence' },
+        { id: 'p2_f11',  label: 'Fig 11 · Smoking' },
+        { id: 'p2_f12',  label: 'Fig 12 · Smoking/Pain' },
+        { id: 'p2_f13',  label: 'Fig 13 · Sleep Prev' },
+        { id: 'p2_f14',  label: 'Fig 14 · Sleep/Pain' },
+        { id: 'p2_f15',  label: 'Fig 15 · Polypharmacy' },
+        { id: 'p2_f16',  label: 'Fig 16 · Med Classes' },
+        { id: 'p2_f17',  label: 'Fig 17 · Poly/Hosp' },
+        { id: 'p2_f18',  label: 'Fig 18 · Poly/Pain' },
+        { id: 'p2_f21',  label: 'Fig 21 · Age/Meds' },
+        { id: 'p2_f22',  label: 'Fig 22 · Weight/Pain' },
+        { id: 'p2_f23',  label: 'Fig 23 · Wt/Diabetes' },
+        { id: 'p2_f24',  label: 'Fig 24 · Wt/HBP' },
+        { id: 'p2_f25',  label: 'Fig 25 · Hospitalization' },
+        { id: 'p2_f27',  label: 'Fig 27 · Corr Matrix' },
+    ],
+    corrns: [
+        { id: 'c_f01', label: '1 · Pain & MH' },
+        { id: 'c_f02', label: '2 · Chronic/MH' },
+        { id: 'c_f03', label: '3 · ART Adhere' },
+        { id: 'c_f04', label: '4 · ART/Neuro' },
+        { id: 'c_f05', label: '5 · Metabolic' },
+        { id: 'c_f06', label: '6 · Age/Comor' },
+        { id: 'c_f07', label: '7 · Age/Pain' },
+        { id: 'c_f08', label: '8 · Smoking' },
+        { id: 'c_f09', label: '9 · Sleep' },
+        { id: 'c_f10', label: '10 · Poly' },
+        { id: 'c_f11', label: '11 · Regions' },
+        { id: 'c_f12', label: '12 · Comorbidities' },
+    ],
+    agesex: [
+        { id: 'as_f01', label: 'Age Categories' },
+        { id: 'as_f02', label: 'Pain by Age' },
+        { id: 'as_f03', label: 'Comor by Age' },
+        { id: 'as_f04', label: 'Pain by Sex' },
+        { id: 'as_f05', label: 'Severity by Sex' },
+        { id: 'as_f06', label: 'Comor by Sex' },
+    ],
+};
 
+let currentPaper = 'overview';
+
+function showPaper(id, btn) {
+    document.querySelectorAll('.paper-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.paper-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    currentPaper = id;
+    buildFigNav(id);
+    window.scrollTo(0, 0);
+}
+
+function buildFigNav(paperId) {
+    const nav   = document.getElementById('figNav');
+    const figs  = FIG_TABS[paperId] || [];
+    nav.innerHTML = '';
+    if (figs.length === 0) return;
+
+    // Activate first fig section
+    const section = document.getElementById(paperId);
+    if (section) {
+        section.querySelectorAll('.fig-section').forEach(s => s.classList.remove('active'));
+        const first = section.querySelector('.fig-section');
+        if (first) first.classList.add('active');
+    }
+
+    figs.forEach((f, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'fig-btn' + (i === 0 ? ' active' : '');
+        btn.textContent = f.label;
+        btn.onclick = () => showFig(paperId, f.id, btn);
+        nav.appendChild(btn);
+    });
+}
+
+function showFig(paperId, figId, btn) {
+    const section = document.getElementById(paperId);
+    if (!section) return;
+    section.querySelectorAll('.fig-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.fig-btn').forEach(b => b.classList.remove('active'));
+    const target = document.getElementById(figId);
+    if (target) target.classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+// Init fig nav for default tab (overview has none)
+buildFigNav('overview');
+</script>
 </body>
 </html>
